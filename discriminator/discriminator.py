@@ -19,6 +19,39 @@ def load_data():
     test_loader = torch.utils.data.DataLoader(NotImplemented)
     return train_loader, test_loader
 
+####################
+'''
+https://pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html
+
+What encoder/decoder do we use?
+
+u_i = (x1 x2 x3 x4 .... xn-1 xn)
+    where x_n is a word
+    where u_i is an utterance (sentence)
+
+Integer Encoding: Where each unique label is mapped to an integer.
+One Hot Encoding: Where each label is mapped to a binary vector.
+Learned Embedding: Where a distributed representation of the categories is learned.
+Transformer: Meaningful embeddings
+    u_i = yes -- transform --> [0, 0, 0]
+    u_i = no -- transform --> [1, 1, 1]
+
+
+https://pytorch.org/tutorials/beginner/nlp/word_embeddings_tutorial.html
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+
+word_to_ix = {"hello": 0, "world": 1}
+embeds = nn.Embedding(2, 5)  # 2 words in vocab, 5 dimensional embeddings
+lookup_tensor = torch.tensor([word_to_ix["hello"]], dtype=torch.long)
+hello_embed = embeds(lookup_tensor)
+print(hello_embed)
+
+'''
+####################
+
 # Sets device to GPU preferred to CPU depending on what is available
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
