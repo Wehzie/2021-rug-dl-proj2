@@ -1,3 +1,5 @@
 torch
 torchvision
 lmdb
+nltk
+gensim
