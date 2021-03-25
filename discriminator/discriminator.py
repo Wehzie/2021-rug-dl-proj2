@@ -6,51 +6,36 @@ import torch.nn as nn
 import torch.nn.parallel
 import torch.optim as optim
 import torch.utils.data
+from torch.utils.data import Dataset
+from torch.utils.data import DataLoader
 import torchvision.datasets as dset
 import torchvision.transforms as transforms
 import torchvision.utils as vutils
+import numpy as np
+import nltk
+from nltk.tokenize import sent_tokenize, word_tokenize
+import gensim
+
+nltk.download('punkt')
+
 
 # Make sure we have consistent seeds.
 random.seed(24)
 
 # Load Data
 def load_data():
-    train_loader = torch.utils.data.DataLoader(NotImplemented)
-    test_loader = torch.utils.data.DataLoader(NotImplemented)
-    return train_loader, test_loader
+    
+    # shape is 1 x number of conversations
+    data = np.loadtxt('./EMNLP_dataset/dialogues_text.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
+    num_conversations = data.shape[0]
+    
+    # split each conversation into n utterances
+    data = [conv.split('__eou__') for conv in data]
+    
+    # split each utterance in a conversation into n words
+    data = [[word_tokenize(utter.lower()) for utter in conv] for conv in data]
 
-####################
-'''
-https://pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html
-
-What encoder/decoder do we use?
-
-u_i = (x1 x2 x3 x4 .... xn-1 xn)
-    where x_n is a word
-    where u_i is an utterance (sentence)
-
-Integer Encoding: Where each unique label is mapped to an integer.
-One Hot Encoding: Where each label is mapped to a binary vector.
-Learned Embedding: Where a distributed representation of the categories is learned.
-Transformer: Meaningful embeddings
-    u_i = yes -- transform --> [0, 0, 0]
-    u_i = no -- transform --> [1, 1, 1]
-
-
-https://pytorch.org/tutorials/beginner/nlp/word_embeddings_tutorial.html
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
-
-word_to_ix = {"hello": 0, "world": 1}
-embeds = nn.Embedding(2, 5)  # 2 words in vocab, 5 dimensional embeddings
-lookup_tensor = torch.tensor([word_to_ix["hello"]], dtype=torch.long)
-hello_embed = embeds(lookup_tensor)
-print(hello_embed)
-
-'''
-####################
+    return data
 
 # Sets device to GPU preferred to CPU depending on what is available
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -98,7 +83,7 @@ def trainG(batch_size, label, fake_label, netG):
     label.fill_(fake_label)
     return fake
 
-def main():
+def train():
     learning_rate = 0.05
     betas = (0.9, 0.999)    # first and second momentum
     epochs = 100
@@ -143,3 +128,9 @@ def main():
             optimizerD.step()
 
         torch.save(netD.state_dict(), '%s/netD_epoch_%d.pth' % (epoch))
+
+def main():
+    data = load_data()
+    print(data[0][0][0])
+
+main()
