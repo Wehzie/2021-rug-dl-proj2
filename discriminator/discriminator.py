@@ -51,6 +51,7 @@ def load_data():
 
     print(len(temp_vocab))
     model = gensim.models.Word2Vec(temp_vocab, size = 100, sg = 1, min_count = 1)
+    print(model)
 
     vectors = []
     for i in range(0, len(data)):
@@ -162,3 +163,11 @@ def main():
     print(data[0][0][0])
 
 main()
+
+# TODO:
+# we need __eou__ end of utterance
+# introduce __eoc__ end of conversation
+# use padding at end of conversation
+# each token in a conversation is vectorized
+# the discriminator takes as input a full conversation 
+# the discriminator outputs a range from 0 to 1 indicating confidence that the conversation is authentic
