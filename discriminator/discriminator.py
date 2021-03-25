@@ -1,20 +1,19 @@
-from __future__ import print_function
 import os
 import random
-import torch
-import torch.nn as nn
-import torch.nn.parallel
-import torch.optim as optim
-import torch.utils.data
-from torch.utils.data import Dataset
-from torch.utils.data import DataLoader
-import torchvision.datasets as dset
-import torchvision.transforms as transforms
-import torchvision.utils as vutils
+from pathlib import Path
 import numpy as np
 import nltk
 from nltk.tokenize import sent_tokenize, word_tokenize
 import gensim
+import pickle
+
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import torch.utils.data
+from torch.utils.data import Dataset
+from torch.utils.data import DataLoader
+
 
 nltk.download('punkt')
 
@@ -22,8 +21,14 @@ nltk.download('punkt')
 # Make sure we have consistent seeds.
 random.seed(24)
 
+def save_data(data):
+    NotImplemented
+
 # Load Data
 def load_data():
+    data = Path("/data/tokenized")
+    
+    if data.is_file(): return data
     
     # shape is 1 x number of conversations
     data = np.loadtxt('./EMNLP_dataset/dialogues_text.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
@@ -35,6 +40,29 @@ def load_data():
     # split each utterance in a conversation into n words
     data = [[word_tokenize(utter.lower()) for utter in conv] for conv in data]
 
+    print(len(data))
+
+    #save_data(data)
+
+    temp_vocab = []
+    for conv in data:
+        for utter in conv:
+            temp_vocab.append(utter)
+
+    print(len(temp_vocab))
+    model = gensim.models.Word2Vec(temp_vocab, size = 100, sg = 1, min_count = 1)
+
+    vectors = []
+    for i in range(0, len(data)):
+        temp_sentence = []
+        for j in range(0, len(data[i])):
+            temp_word = []
+            for k in range(0, len(data[i][j])):
+                temp_word.append(model.wv[data[i][j][k]])
+            temp_sentence.append(temp_word)
+        vectors.append(temp_sentence)
+
+    data = vectors
     return data
 
 # Sets device to GPU preferred to CPU depending on what is available
