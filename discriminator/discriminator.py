@@ -153,7 +153,7 @@ def train(vectors):
             errD = errD_real + errD_fake
             optimizerD.step()
 
-        #torch.save(netD.state_dict(), '/netD_epoch_%d.pth' % (epoch))
+        torch.save(netD.state_dict(), './data/pytorch_out/netD_epoch_%d.pth' % (epoch))
 
 def main():
     vectors, data = load_data()
