@@ -5,7 +5,8 @@ import numpy as np
 import nltk
 from nltk.tokenize import sent_tokenize, word_tokenize
 import gensim
-import pickle
+import json
+import lmdb
 
 import torch
 import torch.nn as nn
@@ -22,49 +23,53 @@ nltk.download('punkt')
 random.seed(24)
 
 def save_data(data):
-    NotImplemented
+    data_path = Path("data/tokenized.s")
+    os.makedirs(data_path, exist_ok=True)
+    with open(data_path, 'w') as file:
+        file.write(json.dumps(data))
 
 # Load Data
 def load_data():
-    data = Path("/data/tokenized")
+    data = Path("data/tokenized")
     
-    if data.is_file(): return data
+    if data.is_file(): return json.loads(data)
     
     # shape is 1 x number of conversations
     data = np.loadtxt('./EMNLP_dataset/dialogues_text.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
     num_conversations = data.shape[0]
     
-    # split each conversation into n utterances
-    data = [conv.split('__eou__') for conv in data]
-    
-    # split each utterance in a conversation into n words
-    data = [[word_tokenize(utter.lower()) for utter in conv] for conv in data]
+    # tokenize each conversation
+    data = [word_tokenize(conv.lower()) for conv in data]
 
-    print(len(data))
-
-    #save_data(data)
-
-    temp_vocab = []
+    # end of conversations indicated by "__eoc__" End-Of-Conversation token
+    max_conv_len = 0
     for conv in data:
-        for utter in conv:
-            temp_vocab.append(utter)
+        conv[-1] = '__eoc__'
+        max_conv_len = len(conv) if max_conv_len < len(conv) else max_conv_len 
 
-    print(len(temp_vocab))
-    model = gensim.models.Word2Vec(temp_vocab, size = 100, sg = 1, min_count = 1)
+    model = gensim.models.Word2Vec(data, size = 100, sg = 1, min_count = 1)
     print(model)
 
     vectors = []
-    for i in range(0, len(data)):
-        temp_sentence = []
-        for j in range(0, len(data[i])):
-            temp_word = []
-            for k in range(0, len(data[i][j])):
-                temp_word.append(model.wv[data[i][j][k]])
-            temp_sentence.append(temp_word)
-        vectors.append(temp_sentence)
+    for conv in data:
+        temp_conversation = []
+        for token in conv:
+            temp_conversation.append(model.wv[token])
+        # padding
+        #for i in range(0, max_conv_len - len(conv)):
+        #    temp_conversation.append(np.zeros(100))
+        vectors.append(temp_conversation)
 
-    data = vectors
-    return data
+    print(f"Max conv len {max_conv_len}")
+    print(type(vectors[0][0]))
+    print(type(vectors[0][-1]))
+
+    #save_vectors(vectors)
+    #save_data(data)
+    print(len((vectors[0])))
+    print(len((data[0])))
+
+    return vectors, data
 
 # Sets device to GPU preferred to CPU depending on what is available
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -160,13 +165,10 @@ def train():
 
 def main():
     data = load_data()
-    print(data[0][0][0])
 
 main()
 
 # TODO:
-# we need __eou__ end of utterance
-# introduce __eoc__ end of conversation
 # use padding at end of conversation
 # each token in a conversation is vectorized
 # the discriminator takes as input a full conversation 
