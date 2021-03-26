@@ -1,12 +1,15 @@
 from operator import getitem
-import os
 import random
 from pathlib import Path
 import numpy as np
 import nltk
 from nltk.tokenize import sent_tokenize, word_tokenize
 import gensim
+
+# save/load data
+import os
 import json
+import pickle
 import lmdb
 
 import torch
@@ -17,57 +20,71 @@ import torch.utils.data
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 
-
 nltk.download('punkt')
 
-
-# Make sure we have consistent seeds.
+# set seed
 random.seed(24)
 
-def save_data(data):
-    data_path = Path("data/tokenized.s")
-    os.makedirs(data_path, exist_ok=True)
+# save string data
+def save_str_dat(data_path, data):
+    #os.makedirs(data_path, exist_ok=True)
     with open(data_path, 'w') as file:
-        file.write(json.dumps(data))
+        json.dump(data, file, indent=1)
 
-# Load Data
+# save tensor data after vectorizing the strings
+def save_vec_dat(data_path, data):
+    #os.makedirs(data_path, exist_ok=True)
+    with open(data_path, 'wb') as file:
+        pickle.dump(data, file)
 
+# load data set
 class DailyDialogue(Dataset):
+    '''Daily Dialogue Dataset.'''
+
     def __init__(self):
-        self.data_path = Path("data/tokenized.json")
-        if self.data_path.is_file(): return json.loads(self.data)
-        
-        
-        # shape is 1 x number of conversations
-        self.data = np.loadtxt('./EMNLP_dataset/dialogues_text.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
-        self.data = self.data[:10] # NOTE: testing
-        self.nr_of_samples = self.data.shape[0]
-        
-        # tokenize each conversation
-        self.data = [word_tokenize(conv.lower()) for conv in self.data]
 
-        # end of conversations indicated by "__eoc__" End-Of-Conversation token
-        for conv in self.data:
-            conv[-1] = '__eoc__'
+        def get_str_dat():
+            str_dat_path = Path("data/tokenized_str_dat.json")
+            if str_dat_path.is_file(): return json.loads(str_dat_path)
+            
+            # shape is 1 x number of conversations
+            str_dat = np.loadtxt('./EMNLP_dataset/dialogues_text.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
+            str_dat = str_dat[:10] # NOTE: testing
+            
+            # tokenize each conversation
+            str_dat = [word_tokenize(conv.lower()) for conv in str_dat]
 
-        model = gensim.models.Word2Vec(self.data, size = 100, sg = 1, min_count = 1)
-        print(model)
+            # end of conversations indicated by "__eoc__" End-Of-Conversation token
+            for conv in str_dat:
+                conv[-1] = '__eoc__'
+            
+            save_str_dat(str_dat_path, str_dat)
+            return str_dat
+            
+        def get_vec_dat(str_dat):
+            vec_dat_path = Path("data/tokenized_vec_dat.json")
+            if vec_dat_path.is_file(): return pickle.loads(vec_dat_path)
 
-        vectors = []
-        for conv in self.data:
-            temp_conversation = []
-            for token in conv:
-                temp_conversation.append(model.wv[token,])
-            vec = torch.FloatTensor(temp_conversation)
-            vectors.append(vec)
+            model = gensim.models.Word2Vec(str_dat, size = 100, sg = 1, min_count = 1)
+            print(model)
 
-        #save_vectors(vectors)
-        #save_data(data)
-        self.string_data = self.data
-        self.data = vectors
+            vec_dat = []
+            for conv in str_dat:
+                temp_conversation = []
+                for token in conv:
+                    temp_conversation.append(model.wv[token,])
+                vec = torch.FloatTensor(temp_conversation)
+                vec_dat.append(vec)
+
+            save_vec_dat(vec_dat_path, vec_dat)
+            return vec_dat
+
+        self.string_data = get_str_dat()
+        self.vector_data = get_vec_dat(self.string_data)
+        self.nr_of_samples = len(self.string_data)
     
     def __getitem__(self, index):
-        return self.data[index]
+        return self.vector_data[index]
     
     def __len__(self):
         return self.nr_of_samples
@@ -157,27 +174,20 @@ def trainG(batch_size, label, fake_label, netG):
 
 def train(data_loader):
     learning_rate = 0.05
-    betas = (0.9, 0.999)    # first and second momentum
+    betas = (0.9, 0.999)            # first and second momentum
     epochs = 100
-
+    
     netD = Discriminator().to(device)
-    # Binary Cross Entropy loss
-    criterion = nn.BCELoss()
+    criterion = nn.BCELoss()        # Binary Cross Entropy loss
 
-    # load data
-    # train_data = vectors[0:-5] # -1000
-    # test_data = vectors[-5:] # -1000
-
+    optimizerD = optim.Adam(netD.parameters(), lr=learning_rate, betas=betas)
 
     real_label = 1
     fake_label = 0
 
-    # setup optimizer
-    optimizerD = optim.Adam(netD.parameters(), lr=learning_rate, betas=betas)
-
     # an epoch is a full iteration over the dataset
     for epoch in range(epochs):
-        print(f"epoch {epoch}")
+        print(f"Epoch: {epoch}")
         for i, data in enumerate(data_loader):    # data is one conversation
             print(f"i {i}")
             ############################
@@ -211,7 +221,16 @@ def train(data_loader):
 def main():
     data = DailyDialogue()
     data_loader = DataLoader(dataset=data, batch_size=1, shuffle=False, num_workers=0)
-    train(data_loader)
+    #train(data_loader)
+
+    print(f"Number of Conversations: {len(data_loader)}")
+
+    for i, j in enumerate(data_loader):
+        print(i)
+        print(j.size())
+        print(j)
+        print("")
+        if i == 3: break
 
 main()
 
