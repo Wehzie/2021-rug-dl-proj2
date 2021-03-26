@@ -96,7 +96,13 @@ class Discriminator(nn.Module):
             # output is 1 x 1
         )
 
+    # https://github.com/pytorch/examples/blob/master/dcgan/main.py
     def forward(self, input):
+        print(f"shape {input.shape}")
+        print(f"size() {input.size()}") # torch.Size([100])
+
+        print(f"0 {input.size(0)}") # 100. works, access index 0 of size
+        print(f"1 {input.size(1)}") # ?. fails, access index 1 of size -> does not exist
         output = self.main(input)
         return output.view(-1, 1).squeeze(1)
 
@@ -117,8 +123,9 @@ def train(vectors):
     criterion = nn.BCELoss()
 
     # load data
-    train_data = vectors[0:-1000]
-    test_data = vectors[-1000:]
+    train_data = vectors[0:-5] # -1000
+    test_data = vectors[-5:] # -1000
+
 
     real_label = 1
     fake_label = 0
@@ -128,16 +135,19 @@ def train(vectors):
 
     # an epoch is a full iteration over the dataset
     for epoch in range(epochs):
-        for i, data in enumerate(train_data, 0):
+        print(f"epoch {epoch}")
+        for i, data in enumerate(train_data, 0):    # data is one conversation
+            print(f"i {i}")
             ############################
             # (1) Update D network: maximize log(D(x)) + log(1 - D(G(z)))
             ###########################
             # train with real
             netD.zero_grad()
-            real_cpu = torch.from_numpy(data[0]).to(device)
+            real_cpu = torch.FloatTensor(data).to(device)
             batch_size = real_cpu.size(0)
             label = torch.full((1,), real_label, dtype=real_cpu.dtype, device=device)
 
+            print(f"len real_cpu {len(real_cpu)}")
             for token in real_cpu:
                 output = netD(token)
             errD_real = criterion(output, label)
@@ -161,8 +171,4 @@ def main():
 
 main()
 
-# TODO:
-# use padding at end of conversation
-# each token in a conversation is vectorized
-# the discriminator takes as input a full conversation 
-# the discriminator outputs a range from 0 to 1 indicating confidence that the conversation is authentic
+# TODO: Dataloader
