@@ -1,17 +1,8 @@
-from operator import getitem
-import random
-from pathlib import Path
-import numpy as np
-import nltk
-from nltk.tokenize import sent_tokenize, word_tokenize
-import gensim
-
-# save/load data
+import sys
 import os
-import json
-import pickle
-import lmdb
+import random
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.utils.rnn as rnnutils
@@ -20,79 +11,10 @@ import torch.utils.data
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 
-nltk.download('punkt')
+from daily_dialogue import Daily_Dialogue
 
 # set seed
 random.seed(24)
-
-# save string data
-def save_str_dat(data_path, data):
-    #os.makedirs(data_path, exist_ok=True)
-    with open(data_path, 'w') as file:
-        json.dump(data, file, indent=1)
-
-# save tensor data after vectorizing the strings
-def save_vec_dat(data_path, data):
-    #os.makedirs(data_path, exist_ok=True)
-    with open(data_path, 'wb') as file:
-        pickle.dump(data, file)
-
-# load data set
-class DailyDialogue(Dataset):
-    '''Daily Dialogue Dataset.'''
-
-    def __init__(self):
-
-        def get_str_dat():
-            str_dat_path = Path("data/tokenized_str_dat.json")
-            if str_dat_path.is_file():
-                with open(str_dat_path, 'r') as file:
-                    return json.load(file)
-            
-            # shape is 1 x number of conversations
-            str_dat = np.loadtxt('./EMNLP_dataset/dialogues_text.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
-            str_dat = str_dat[:10] # NOTE: testing
-            
-            # tokenize each conversation
-            str_dat = [word_tokenize(conv.lower()) for conv in str_dat]
-
-            # end of conversations indicated by "__eoc__" End-Of-Conversation token
-            for conv in str_dat:
-                conv[-1] = '__eoc__'
-            
-            save_str_dat(str_dat_path, str_dat)
-            return str_dat
-            
-        def get_vec_dat(str_dat):
-            vec_dat_path = Path("data/tokenized_vec_dat.json")
-            if vec_dat_path.is_file():
-                with open(vec_dat_path, 'rb') as file:
-                    return pickle.load(file)
-
-            model = gensim.models.Word2Vec(str_dat, size = 100, sg = 1, min_count = 1)
-            print(model)
-
-            vec_dat = []
-            for conv in str_dat:
-                temp_conversation = []
-                for token in conv:
-                    temp_conversation.append(model.wv[token,])
-                vec = torch.FloatTensor(temp_conversation)
-                vec_dat.append(vec)
-
-            save_vec_dat(vec_dat_path, vec_dat)
-            return vec_dat
-
-        self.string_data = get_str_dat()
-        self.vector_data = get_vec_dat(self.string_data)
-        self.nr_of_samples = len(self.string_data)
-    
-    def __getitem__(self, index):
-        return self.vector_data[index]
-    
-    def __len__(self):
-        return self.nr_of_samples
-
 
 # Sets device to GPU preferred to CPU depending on what is available
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -223,7 +145,7 @@ def train(data_loader):
         torch.save(netD.state_dict(), './data/pytorch_out/netD_epoch_%d.pth' % (epoch))
 
 def main():
-    data = DailyDialogue()
+    data = Daily_Dialogue()
     data_loader = DataLoader(dataset=data, batch_size=1, shuffle=False, num_workers=0)
     #train(data_loader)
 
@@ -236,7 +158,8 @@ def main():
         print("")
         if i == 3: break
 
-main()
+if __name__ == "__main__":
+    main()
 
 # TODO: FIND THE WAY to do RNN without the stupid module which fucks it all up.
 # maybe this https://stackoverflow.com/questions/51030782/why-do-we-pack-the-sequences-in-pytorch
