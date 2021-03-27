@@ -45,7 +45,9 @@ class DailyDialogue(Dataset):
 
         def get_str_dat():
             str_dat_path = Path("data/tokenized_str_dat.json")
-            if str_dat_path.is_file(): return json.loads(str_dat_path)
+            if str_dat_path.is_file():
+                with open(str_dat_path, 'r') as file:
+                    return json.load(file)
             
             # shape is 1 x number of conversations
             str_dat = np.loadtxt('./EMNLP_dataset/dialogues_text.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
@@ -63,7 +65,9 @@ class DailyDialogue(Dataset):
             
         def get_vec_dat(str_dat):
             vec_dat_path = Path("data/tokenized_vec_dat.json")
-            if vec_dat_path.is_file(): return pickle.loads(vec_dat_path)
+            if vec_dat_path.is_file():
+                with open(vec_dat_path, 'rb') as file:
+                    return pickle.load(file)
 
             model = gensim.models.Word2Vec(str_dat, size = 100, sg = 1, min_count = 1)
             print(model)
