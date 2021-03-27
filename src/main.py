@@ -35,43 +35,42 @@ def train(data_loader):
     learning_rate = 0.05
     betas = (0.9, 0.999)            # first and second momentum
     epochs = 100
-    
+
     netD = Discriminator().to(device)
     criterion = nn.BCELoss()        # Binary Cross Entropy loss
-
     optimizerD = optim.Adam(netD.parameters(), lr=learning_rate, betas=betas)
 
     real_label = 1
     fake_label = 0
 
-    # an epoch is a full iteration over the dataset
-    for epoch in range(epochs):
+   
+    for epoch in range(epochs):                 # an epoch is a full iteration over the dataset
         print(f"Epoch: {epoch}")
-        for i, data in enumerate(data_loader):    # data is one conversation
-            print(f"i {i}")
+        for i, conv in enumerate(data_loader):  # conv is one conversation
+            print(f"Conversation: {i}")
             ############################
-            # (1) Update D network: maximize log(D(x)) + log(1 - D(G(z)))
+            # (1) Update D network.
             ###########################
-            # train with real
-            netD.zero_grad()
-            real_cpu = torch.FloatTensor(data).to(device)
-            batch_size = real_cpu.size(0)
-            label = torch.full((len(data[0]),), real_label, dtype=real_cpu.dtype, device=device)
+            netD.zero_grad()                        # initialize gradients with zero
+            real_cpu = conv.to(device)              # transfer tensor to CPU
+            batch_size = real_cpu.size(0)           # batch size is number of conversations (1) handled per iteration
+                                                    #   size(0) takes first argument of tensor shape
+            label = torch.full((len(conv[0]),), real_label, dtype=real_cpu.dtype, device=device)
 
-            print(f"real_cpu shape: {real_cpu.shape}")
-            output = netD(real_cpu[0])  # only one 3-d vector is returned so removed 4th dimension
+            output = netD(real_cpu[0])  # only one 3-d vector is returned so remove 4th dimension
+            #print(f"Discriminator output at each token: {output}")
+            print(f"Discriminator output at last token: {output[-1]}")
 
             errD_real = criterion(output, label)
             errD_real.backward()
             D_x = output.mean().item()
 
-            
-            fake = trainG(batch_size, label, fake_label, NotImplemented)
-            output = netD(fake.detach())
-            errD_fake = criterion(output, label)
-            errD_fake.backward()
-            D_G_z1 = output.mean().item()
-            errD = errD_real + errD_fake
+            #fake = trainG(batch_size, label, fake_label, NotImplemented)
+            #output = netD(fake.detach())
+            #errD_fake = criterion(output, label)
+            #errD_fake.backward()
+            #D_G_z1 = output.mean().item()
+            #errD = errD_real + errD_fake
             optimizerD.step()
 
         torch.save(netD.state_dict(), './data/pytorch_out/netD_epoch_%d.pth' % (epoch))
