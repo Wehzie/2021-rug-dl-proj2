@@ -25,8 +25,8 @@ def normalizeString(string):
 ######################### READ DATA ##########################################
 # %%
 
-test = "/home/gery/Documents/Deep learning/I17-1099.Datasets/EMNLP_dataset/d_t.txt"
-real = "/home/gery/Documents/Deep learning/I17-1099.Datasets/EMNLP_dataset/dialogues_text.txt"
+test = "EMNLP_dataset/d_t.txt"
+real = "EMNLP_dataset/dialogues_text.txt"
 
 DATA_PATH = real
 

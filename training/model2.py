@@ -16,7 +16,7 @@ import os
 import math
 
 
-DATA_PATH = "/home/gery/Documents/Deep learning/I17-1099.Datasets/EMNLP_dataset/dialogues_text.txt"
+DATA_PATH = "EMNLP_dataset/dialogues_text.txt"
 
 qa_pairs = []
 
