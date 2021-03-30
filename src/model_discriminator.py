@@ -9,7 +9,7 @@ class Discriminator(nn.Module):
             input_size = 100,       # size of a token vector
             hidden_size = 100,
             num_layers = 10,
-            nonlinearity = 'tanh',
+            nonlinearity = 'tanh',  # TODO: try relu
         )
         self.linear = nn.Linear(100, 1)
         self.sigmoid = nn.Sigmoid()
