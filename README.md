@@ -1,4 +1,4 @@
-# 20201 RUG Deep Learning Project 2
+# 2021 RUG Deep Learning Project 2
 
 We develop two models.
 First, conversation producing model, where two instances of this model aim to reproduce human interaction
