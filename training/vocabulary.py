@@ -56,7 +56,7 @@ def prepareData(pairs_path, max_length):
     # Return the vocabulary and the new pairs of sentences
     return voc, new_pairs            
 
-def trimLines(lines_path, max_length, voc):
+def trimLines(lines_path, voc):
     lines = open(lines_path, "r").read().strip().split('\n')
 
     new_lines = []

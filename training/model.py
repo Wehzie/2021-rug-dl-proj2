@@ -20,16 +20,16 @@ device = torch.device("cuda" if USE_CUDA else "cpu")
 
 # test = "EMNLP_dataset/d_t.txt"
 # real = "EMNLP_dataset/dialogues_text.txt"
-
+THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
 test = "EMNLP_dataset/d_t.txt"
-real = "dialogues_text.txt"
+real = os.path.join(THIS_FOLDER, "dialogues_text.txt")
 
 DATA_PATH = real
-DATA_TEST_PATH = 'dialogues_test.txt'
+DATA_TEST_PATH = os.path.join(THIS_FOLDER, 'dialogues_test.txt')
 
 PAIRS_PATH = 'pairs_trimmed.txt'
 LINES_PATH = 'lines_trimmed.txt'
-save_dir = os.path.join(os.getcwd(),'results')
+save_dir = os.path.join(os.getcwd(), 'results')
 
 ################### READ, NORMALIZE, CREATE PAIRS ############################
 
@@ -37,7 +37,7 @@ MAX_LENGTH = 15                            # maximum words in a sentence
 sentences_lengths = getData(DATA_PATH, PAIRS_PATH)            # read_data.py
 
 # if the trimmed lines are already saved skip getTestData
-if os.stat(LINES_PATH).st_size == 0 or path.exists(LINES_PATH) == 0: 
+if path.exists(LINES_PATH) == False or os.stat(LINES_PATH).st_size == 0: 
     getTestData(DATA_TEST_PATH, LINES_PATH, MAX_LENGTH)       # read_data.py
 
 #################### CREATE VOCABULARY AND NEW PAIRS #########################
@@ -46,7 +46,7 @@ voc, pairs = prepareData(PAIRS_PATH, MAX_LENGTH)  # vocabulary.py
 print('total dialogues '+ str(len(pairs)))
 print('total words '+ str(voc.__len__()))
 
-
+lines = trimLines(LINES_PATH, voc)
 #################### PREPARE DATA IN BATCHES #################################
 small_batch_size = 5
 batches = batch2TrainData(voc, [random.choice(pairs) for _ in range(small_batch_size)])
@@ -75,9 +75,9 @@ batch_size = 64
 loadFilename = None
 checkpoint_iter = 4000
 
-# loadFilename = os.path.join(save_dir, model_name,
-#                             '{}-{}_{}'.format(encoder_n_layers, decoder_n_layers, hidden_size),
-#                             '{}_checkpoint.tar'.format(checkpoint_iter))
+loadFilename = os.path.join(save_dir, model_name,
+                            '{}-{}_{}'.format(encoder_n_layers, decoder_n_layers, hidden_size),
+                            '{}_checkpoint.tar'.format(checkpoint_iter))
 
 encoder_optimizer_sd = []
 decoder_optimizer_sd = []
@@ -115,10 +115,10 @@ print('Models built and ready to go!')
 
 ################### TRAINING ###############################################
 
-full_training(model_name, voc, pairs, encoder, decoder, embedding, 
-              encoder_n_layers, decoder_n_layers, save_dir, batch_size, 
-              loadFilename, encoder_optimizer_sd, decoder_optimizer_sd, 
-              MAX_LENGTH, device)
+# full_training(model_name, voc, pairs, encoder, decoder, embedding, 
+#               encoder_n_layers, decoder_n_layers, save_dir, batch_size, 
+#               loadFilename, encoder_optimizer_sd, decoder_optimizer_sd, 
+#               MAX_LENGTH, device)
 
 # Set dropout layers to eval mode
 encoder.eval()
@@ -127,11 +127,11 @@ decoder.eval()
 # Initialize search module
 searcher = GreedySearchDecoder(encoder, decoder, device)
 
-evaluateInput(encoder, decoder, searcher, voc, device, MAX_LENGTH)
+# evaluateInput(encoder, decoder, searcher, voc, device, MAX_LENGTH)
 
 
 # CHATBOT CONVERSATIONS
-save_file = "conversations.txt"
-createConversations(encoder, decoder, searcher, voc, device, MAX_LENGTH, save_file, sentences_lengths, pairs)
+save_file = os.path.join(THIS_FOLDER, "conversations.txt")
+createConversations(encoder, decoder, searcher, voc, device, MAX_LENGTH, save_file, sentences_lengths, lines)
 
 

@@ -19,7 +19,7 @@ def getData(data_path, pairs_path):
             sentences_length.append(len(sentences))                       # Save the length of the conversation
             # Separate conversation into pairs of sentences
 
-            if os.stat(pairs_path).st_size == 0 or path.exists(pairs_path) == 0:  # if the trimmed pairs are already saved
+            if path.exists(pairs_path) == False or os.stat(pairs_path).st_size == 0:  # if the trimmed pairs are already saved
                 for idx in range(len(sentences)-1):
                     inputLine = normalizeString(sentences[idx].strip())           # .strip() removes start/end whitespace
                     targetLine = normalizeString(sentences[idx+1].strip())
@@ -27,7 +27,7 @@ def getData(data_path, pairs_path):
                         qa_pairs.append([inputLine, targetLine])
 
     # Write pairs into csv file
-    if os.stat(pairs_path).st_size == 0 or path.exists(pairs_path) == 0:          # if the trimmed pairs are already saved
+    if path.exists(pairs_path) == False or os.stat(pairs_path).st_size == 0:          # if the trimmed pairs are already saved
         delimiter = '\t'
         delimiter = str(codecs.decode(delimiter, "unicode_escape"))
         with open(pairs_path, 'w', encoding='utf-8') as outputfile:
