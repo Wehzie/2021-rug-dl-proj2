@@ -80,6 +80,11 @@ def main():
     data_loader = DataLoader(dataset=data, batch_size=1, shuffle=False, num_workers=0)
     print(f"Number of conversations: {len(data_loader)}")
     print(f"Dimensions of first conversation (vectorized): {data[0].size()}")
+
+    print(data.string_data[0])
+    print(data.decode(data.vector_data[0]))
+
+    quit()
     train(data_loader)
 
 if __name__ == "__main__":

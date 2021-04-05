@@ -49,6 +49,7 @@ class Daily_Dialogue(Dataset):
         #if vec_dat_path.is_file():
         #    with open(vec_dat_path, 'rb') as file:
         #        return pickle.load(file)
+        # TODO: if we save/load vectors we also want to save/load the model for decoding, use model.save()
 
         # initialize encoder decoder model
         model = gensim.models.Word2Vec(str_dat, size = 100, sg = 1, min_count = 1)
@@ -63,7 +64,15 @@ class Daily_Dialogue(Dataset):
             vec_dat.append(vec)
 
         self.save_vec_dat(vec_dat_path, vec_dat)
+        self.model = model
         return vec_dat
+
+    # is this possibe?
+    def decode(self, vec_dat: list) -> list:
+        out = []
+        for token in vec_dat:
+            NotImplemented
+        return out
 
     # save string data
     def save_str_dat(self, data_path, data):

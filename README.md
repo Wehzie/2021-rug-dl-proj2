@@ -1,4 +1,4 @@
-# 20201 RUG Deep Learning Project 2
+# 2021 RUG Deep Learning Project 2
 
 We develop two models.
 First, conversation producing model, where two instances of this model aim to reproduce human interaction
@@ -14,3 +14,7 @@ https://www.aclweb.org/anthology/I17-1099/
 Install PyTorch. This command is for CPU only use. For GPU see PyTorch documentation.
 
     pip install torch==1.8.0+cpu torchvision==0.9.0+cpu torchaudio==0.8.0 -f https://download.pytorch.org/whl/torch_stable.html
+
+## Gan example
+
+https://pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html
