@@ -26,17 +26,17 @@ real = "dialogues_text.txt"
 
 DATA_PATH = real
 
-pairs_trimmed = 'pairs_trimmed.txt'
+PAIRS_PATH = 'pairs_trimmed.txt'
 save_dir = os.path.join(os.getcwd(),'results')
 
 ################### READ, NORMALIZE, CREATE PAIRS ############################
 
 MAX_LENGTH = 15                    # maximum words in a sentence 
-sentences_lengths = getData(DATA_PATH, pairs_trimmed) # read_data.py
+sentences_lengths = getData(DATA_PATH, PAIRS_PATH) # read_data.py
 
 #################### CREATE VOCABULARY AND NEW PAIRS #########################
 
-voc, pairs = prepareData(pairs_trimmed, MAX_LENGTH)  # vocabulary.py
+voc, pairs = prepareData(PAIRS_PATH, MAX_LENGTH)  # vocabulary.py
 print('total dialogues '+ str(len(pairs)))
 print('total words '+ str(voc.__len__()))
 
