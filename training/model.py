@@ -8,7 +8,7 @@ from attention_layer import Attn
 from decoder import LuongAttnDecoderRNN
 from encoder import EncoderRNN
 from greedy_decoder import GreedySearchDecoder
-from evaluate import evaluateInput
+from evaluate import evaluateInput, createConversations
 from train_model import full_training
 from read_data import getData
 from read_data import normalizeString
@@ -32,7 +32,7 @@ save_dir = os.path.join(os.getcwd(),'results')
 
 ################### READ, NORMALIZE, CREATE PAIRS ############################
 
-MAX_LENGTH = 15                    # maximum words in a sentence 
+MAX_LENGTH = 15                    # maximum words in a sentence
 sentences_lengths = getData(DATA_PATH, pairs_trimmed) # read_data.py
 
 #################### CREATE VOCABULARY AND NEW PAIRS #########################
