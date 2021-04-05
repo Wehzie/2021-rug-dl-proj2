@@ -8,10 +8,10 @@ def normalizeString(string):
     string = re.sub(r"\s+", r" ", string).strip()
     return string
 
-def getData(DATA_PATH, pairs_trimmed):
+def getData(data_path, pairs_path):
     qa_pairs = []
     sentences_length = []
-    with open(DATA_PATH, "r") as f:
+    with open(data_path, "r") as f:
         # Load the data
         for line in f:
             sentences = line.split("__eou__")
@@ -27,7 +27,7 @@ def getData(DATA_PATH, pairs_trimmed):
     # Write pairs into csv file
     delimiter = '\t'
     delimiter = str(codecs.decode(delimiter, "unicode_escape"))
-    with open(pairs_trimmed, 'w', encoding='utf-8') as outputfile:
+    with open(pairs_path, 'w', encoding='utf-8') as outputfile:
         writer = csv.writer(outputfile, delimiter = delimiter, lineterminator='\n')
         for pair in qa_pairs:
             writer.writerow(pair)

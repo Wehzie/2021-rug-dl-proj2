@@ -20,8 +20,8 @@ def trimPairsByWords(voc, pair):
                 return False
     return True
 
-def prepareData(pairs_trimmed, max_length):
-    lines = open(pairs_trimmed, "r").read().strip().split('\n')
+def prepareData(pairs_path, max_length):
+    lines = open(pairs_path, "r").read().strip().split('\n')
     pairs = [[s for s in l.split('\t')] for l in lines]  # retrieve pairs
     pairs = filterPairs(pairs, max_length)             # Remove sentences with more words than MAX_LENGTH
     
