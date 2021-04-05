@@ -18,17 +18,16 @@ from vocabulary import prepareData, trimLines
 USE_CUDA = torch.cuda.is_available()
 device = torch.device("cuda" if USE_CUDA else "cpu")
 
-# test = "EMNLP_dataset/d_t.txt"
-# real = "EMNLP_dataset/dialogues_text.txt"
 THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
+
 test = "EMNLP_dataset/d_t.txt"
-real = os.path.join(THIS_FOLDER, "dialogues_text.txt")
+real = "EMNLP_dataset/dialogues_text.txt"
 
 DATA_PATH = real
-DATA_TEST_PATH = os.path.join(THIS_FOLDER, 'dialogues_test.txt')
+DATA_TEST_PATH = "EMNLP_dataset/test/dialogues_test.txt"
 
-PAIRS_PATH = 'pairs_trimmed.txt'
-LINES_PATH = 'lines_trimmed.txt'
+PAIRS_PATH = os.path.join(THIS_FOLDER, 'pairs_trimmed.txt')
+LINES_PATH = os.path.join(THIS_FOLDER, 'lines_trimmed.txt')
 save_dir = os.path.join(os.getcwd(), 'results')
 
 ################### READ, NORMALIZE, CREATE PAIRS ############################
