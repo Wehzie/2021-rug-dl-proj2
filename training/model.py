@@ -10,8 +10,8 @@ from encoder import EncoderRNN
 from greedy_decoder import GreedySearchDecoder
 from evaluate import evaluateInput, createConversations
 from train_model import full_training
-from read_data import getData, normalizeString
-from vocabulary import prepareData
+from read_data import normalizeString, getData, getTestData
+from vocabulary import prepareData, trimLines
 
 ##############################################################################
 
@@ -25,14 +25,20 @@ test = "EMNLP_dataset/d_t.txt"
 real = "dialogues_text.txt"
 
 DATA_PATH = real
+DATA_TEST_PATH = 'dialogues_test.txt'
 
 PAIRS_PATH = 'pairs_trimmed.txt'
+LINES_PATH = 'lines_trimmed.txt'
 save_dir = os.path.join(os.getcwd(),'results')
 
 ################### READ, NORMALIZE, CREATE PAIRS ############################
 
-MAX_LENGTH = 15                    # maximum words in a sentence 
-sentences_lengths = getData(DATA_PATH, PAIRS_PATH) # read_data.py
+MAX_LENGTH = 15                            # maximum words in a sentence 
+sentences_lengths = getData(DATA_PATH, PAIRS_PATH)            # read_data.py
+
+# if the trimmed lines are already saved skip getTestData
+if os.stat(LINES_PATH).st_size == 0 or path.exists(LINES_PATH) == 0: 
+    getTestData(DATA_TEST_PATH, LINES_PATH, MAX_LENGTH)       # read_data.py
 
 #################### CREATE VOCABULARY AND NEW PAIRS #########################
 
