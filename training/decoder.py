@@ -18,7 +18,6 @@ class LuongAttnDecoderRNN(nn.Module):
         self.gru = nn.GRU(hidden_size, hidden_size, n_layers, dropout=(0 if n_layers == 1 else dropout))
         self.concat = nn.Linear(hidden_size * 2, hidden_size)
         self.out = nn.Linear(hidden_size, output_size)
-
         self.attn = Attn(attn_model, hidden_size)
 
     def forward(self, input_step, last_hidden, encoder_outputs):
