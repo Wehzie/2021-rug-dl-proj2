@@ -27,7 +27,7 @@ real = "dialogues_text.txt"
 DATA_PATH = real
 
 pairs_trimmed = 'pairs_trimmed.txt'
-save_dir = os.path.join(os.getcwd(),'results')
+save_dir = os.path.join(os.getcwd(), 'results')
 
 ################### READ, NORMALIZE, CREATE PAIRS ############################
 
