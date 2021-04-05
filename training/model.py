@@ -126,6 +126,6 @@ evaluateInput(encoder, decoder, searcher, voc, device, MAX_LENGTH)
 
 # CHATBOT CONVERSATIONS
 save_file = "conversations.txt"
-createConversations(encoder, decoder, searcher, voc, device, MAX_LENGTH, save_file, sentences_lengths, lines_test)
+createConversations(encoder, decoder, searcher, voc, device, MAX_LENGTH, save_file, sentences_lengths, pairs)
 
 

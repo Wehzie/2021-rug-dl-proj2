@@ -55,10 +55,33 @@ def evaluateInput(encoder, decoder, searcher, voc, device, max_length):
         except KeyError:
             print("Error: Encountered unknown word.")
 
+def sentenceMaker(encoder, decoder, searcher, voc, input_sentence, device, max_length):
+    output_words = evaluate(encoder, decoder, searcher, voc, input_sentence, device, max_length)
+    response = []
+    for word in output_words:
+        if word != 'EOS':
+            response.append(word)
+        else:
+            response.append(' __eou__ ')
+            break
+    return response
+
 def createConversations(encoder, decoder, searcher, voc, device, max_length, save_file, sentences_lengths, test_lines):
     min_sentence_length = min(sentences_lengths)
     max_sentence_length = max(sentences_lengths)
 
     sentences_distribution, _= np.histogram(sentences_lengths, bins=(max_sentence_length - 1))
     chatbot_conv = 50000        # number of conversations the chatbot will generate
-    chatbot_conv_lengths = random.choices(np.arange(min_sentence_length, max_sentence_length + 1), weights = sentences_distribution, k = chatbot_conv)          
+    chatbot_conv_lengths = random.choices(np.arange(min_sentence_length, max_sentence_length + 1), weights = sentences_distribution, k = chatbot_conv)
+    
+    file = open(save_file, 'a')
+    for conv_length in chatbot_conv_lengths:
+        conversation_starter = test_lines.pop(0)
+        file.write(conversation_starter + ' __eou__ ')
+        response = sentenceMaker(encoder, decoder, searcher, voc, conversation_starter, device, max_length)
+        for _ in range(conv_length):
+            file.write(''.join(response))
+            input_sentence = response
+            response = sentenceMaker(encoder, decoder, searcher, voc, input_sentence, device, max_length)
+        file.write('\n')
+        
