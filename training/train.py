@@ -77,7 +77,7 @@ def train(input_variable, lengths, target_variable, mask, max_target_len, encode
             print_losses.append(mask_loss.item() * nTotal)
             n_totals += nTotal
 
-    # Perform backpropatation
+    # Perform backpropagation
     loss.backward()
 
     # Clip gradients: gradients are modified in place

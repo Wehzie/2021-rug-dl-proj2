@@ -18,7 +18,7 @@ def trainIters(model_name, voc, pairs, encoder, decoder, encoder_optimizer, deco
 
     # Load batches for each iteration
     training_batches = [batch2TrainData(voc, [random.choice(pairs) for _ in range(batch_size)])
-                      for _ in range(n_iteration)]
+                        for _ in range(n_iteration)]
 
     # Initializations
     print('Initializing ...')
@@ -36,7 +36,7 @@ def trainIters(model_name, voc, pairs, encoder, decoder, encoder_optimizer, deco
 
         # Run a training iteration with batch
         loss = train(input_variable, lengths, target_variable, mask, max_target_len, encoder,
-                     decoder, embedding, encoder_optimizer, decoder_optimizer, batch_size, clip)
+                    decoder, embedding, encoder_optimizer, decoder_optimizer, batch_size, clip)
         print_loss += loss
 
         # Print progress
@@ -46,7 +46,7 @@ def trainIters(model_name, voc, pairs, encoder, decoder, encoder_optimizer, deco
             print_loss = 0
 
         # Save checkpoint
-        if (iteration % save_every == 0):
+        if iteration % save_every == 0:
             directory = os.path.join(save_dir, model_name, '{}-{}_{}'.format(encoder_n_layers, decoder_n_layers, hidden_size))
             if not os.path.exists(directory):
                 os.makedirs(directory)

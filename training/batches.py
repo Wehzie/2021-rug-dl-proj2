@@ -7,7 +7,6 @@ EOS_token = 2
 def indexesFromSentence(voc, sentence):
     return [voc.word2index(word) for word in sentence.split(' ')] + [EOS_token]
 
-
 def zeroPadding(l, fillvalue=PAD_token):
     return list(itertools.zip_longest(*l, fillvalue=fillvalue))
 
@@ -41,7 +40,7 @@ def outputVar(l, voc):
     padVar = torch.LongTensor(padList)
     return padVar, mask, max_target_len
 
-# # Returns all items for a given batch of pairs
+# Returns all items for a given batch of pairs
 def batch2TrainData(voc, pair_batch):
     pair_batch.sort(key=lambda x: len(x[0].split(" ")), reverse=True)
     input_batch, output_batch = [], []

@@ -24,7 +24,7 @@ def evaluate(encoder, decoder, searcher, voc, sentence, device, max_length=MAX_L
     lengths = lengths.to(device)
     # lengths = torch.as_tensor(lengths, dtype=torch.int64, device='cpu')
     # Decode sentence with searcher
-    tokens, scores = searcher(input_batch, lengths, max_length)
+    tokens, _ = searcher(input_batch, lengths, max_length)
     # indexes -> words
     decoded_words = [voc.index2word(token.item()) for token in tokens]
     # print(decoded_words)
@@ -33,12 +33,13 @@ def evaluate(encoder, decoder, searcher, voc, sentence, device, max_length=MAX_L
 
 def evaluateInput(encoder, decoder, searcher, voc, device):
     input_sentence = ''
-    while(1):
+    while True:
         try:
             # Get input sentence
             input_sentence = input('> ')
             # Check if it is quit case
-            if input_sentence == 'q' or input_sentence == 'quit': break
+            if input_sentence == 'q' or input_sentence == 'quit':
+                break
             # Normalize sentence
             input_sentence = normalizeString(input_sentence)
             # Evaluate sentence
