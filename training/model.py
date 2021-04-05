@@ -10,8 +10,7 @@ from encoder import EncoderRNN
 from greedy_decoder import GreedySearchDecoder
 from evaluate import evaluateInput, createConversations
 from train_model import full_training
-from read_data import getData
-from read_data import normalizeString
+from read_data import getData, normalizeString
 from vocabulary import prepareData
 
 ##############################################################################
