@@ -1,5 +1,6 @@
 from imports import *
 from trainIters import trainIters
+
 # Configure training/optimization
 clip = 50.0
 teacher_forcing_ratio = 1.0
@@ -9,9 +10,10 @@ n_iteration = 4000
 print_every = 1
 save_every = 500
 
-def full_training(model_name, voc, pairs, encoder, decoder,
-                  embedding, encoder_n_layers, decoder_n_layers, save_dir, batch_size,
-                  loadFilename, encoder_optimizer_sd, decoder_optimizer_sd):
+def full_training(model_name, voc, pairs, encoder, decoder,embedding, encoder_n_layers, 
+                  decoder_n_layers, save_dir, batch_size, loadFilename, encoder_optimizer_sd, 
+                  decoder_optimizer_sd, max_length, device):
+                  
     # Ensure dropout layers are in train mode
     encoder.train()
     decoder.train()
@@ -39,5 +41,5 @@ def full_training(model_name, voc, pairs, encoder, decoder,
     print("Starting Training!")
     trainIters(model_name, voc, pairs, encoder, decoder, encoder_optimizer, decoder_optimizer,
                embedding, encoder_n_layers, decoder_n_layers, save_dir, n_iteration, batch_size,
-               print_every, save_every, clip, loadFilename)
+               print_every, save_every, clip, loadFilename, max_length, teacher_forcing_ratio, device)
     

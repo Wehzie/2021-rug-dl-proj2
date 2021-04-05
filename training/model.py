@@ -10,109 +10,42 @@ from encoder import EncoderRNN
 from greedy_decoder import GreedySearchDecoder
 from evaluate import evaluateInput
 from train_model import full_training
+from read_data import getData
+from read_data import normalizeString
+from vocabulary import prepareData
+
+##############################################################################
 
 USE_CUDA = torch.cuda.is_available()
 device = torch.device("cuda" if USE_CUDA else "cpu")
 
-##############################################################################
-## Lowercase, trim, and remove non-letter characters
-def normalizeString(string):
-    string = string.lower().strip()
-    string = re.sub(r"([.!?])", r" \1", string)
-    string = re.sub(r"[^a-zA-Z.!?]+", r" ", string)
-    string = re.sub(r"\s+", r" ", string).strip()
-    return string
-
-######################### READ DATA ##########################################
-
+# test = "EMNLP_dataset/d_t.txt"
+# real = "EMNLP_dataset/dialogues_text.txt"
 
 test = "EMNLP_dataset/d_t.txt"
-real = "EMNLP_dataset/dialogues_text.txt"
+real = "dialogues_text.txt"
 
 DATA_PATH = real
 
-qa_pairs = []
-delimiter = '\t'
-delimiter = str(codecs.decode(delimiter, "unicode_escape"))
-data = 'pairs.txt'
-
+pairs_trimmed = 'pairs_trimmed.txt'
 save_dir = os.path.join(os.getcwd(),'results')
 
+################### READ, NORMALIZE, CREATE PAIRS ############################
 
-def getData():
-    with open(DATA_PATH, "r") as f:
-        ## Load the data
-        for line in f:
-            sentences = line.split("__eou__")
-            sentences.pop()                                               # remove the end-line
-            ## Separate conversation into pairs of sentences
-            for idx in range(len(sentences)-1):
-                inputLine = normalizeString(sentences[idx].strip())       # .strip() removes start/end whitespace
-                targetLine = normalizeString(sentences[idx+1].strip())
+MAX_LENGTH = 15                    # maximum words in a sentence 
+sentences_lengths = getData(DATA_PATH, pairs_trimmed) # read_data.py
 
-                if inputLine and targetLine:
-                    qa_pairs.append([inputLine, targetLine])
+#################### CREATE VOCABULARY AND NEW PAIRS #########################
 
-    ## Write pairs into csv file
-    with open(data, 'w', encoding='utf-8') as outputfile:
-        writer = csv.writer(outputfile, delimiter = delimiter, lineterminator='\n')
-        for pair in qa_pairs:
-            writer.writerow(pair)
-
-######################### TRIM DATA ##########################################
-
-MAX_LENGTH = 15
-
-def filterPairs(pairs):
-    new_pairs = []
-    for pair in pairs:
-        if len(pair[0].split(" ")) < MAX_LENGTH and len(pair[0].split(" ")) < MAX_LENGTH:
-            new_pairs.append(pair)
-    return new_pairs
-
-def trimPairsByWords(voc, pair):
-    for sentence in pair:
-        for word in sentence.split(" "):
-            try:
-                voc.word2index(word)
-            except:
-                return False
-    return True
-
-def prepareData():
-    lines = open(data, "r").read().strip().split('\n')
-    pairs = [[s for s in l.split('\t')] for l in lines]
-    pairs = filterPairs(pairs)
-    voc = Vocab()
-    for _ in range(4):
-        voc.word2index("PAD", train=True)
-        voc.word2index("SOS", train=True)
-        voc.word2index("EOS", train=True)
-    for pair in pairs:
-        for sentence in pair:
-            for word in sentence.split(" "):
-                voc.word2index(word, train=True)
-    voc = voc.prune_by_count(3)
-    new_pairs = []
-    for pair in pairs:
-        if trimPairsByWords(voc,pair):
-            new_pairs.append(pair)
-    pairs = new_pairs
-    return voc, pairs
-
-
-getData()
-voc, pairs = prepareData()
+voc, pairs = prepareData(pairs_trimmed, MAX_LENGTH)  # vocabulary.py
 print('total dialogues '+ str(len(pairs)))
 print('total words '+ str(voc.__len__()))
 
 
-
-#################### PREPARE DATA ############################################
+#################### PREPARE DATA IN BATCHES #################################
 small_batch_size = 5
 batches = batch2TrainData(voc, [random.choice(pairs) for _ in range(small_batch_size)])
 input_variable, lengths, target_variable, mask, max_target_len = batches
-
 
 # print("input_variable:", input_variable)
 # print("lengths:", lengths)
@@ -163,6 +96,7 @@ print('Building encoder and decoder ...')
 embedding = nn.Embedding(voc.__len__(), hidden_size)    #Word embedding
 if loadFilename:
     embedding.load_state_dict(embedding_sd)
+
 # Initialize encoder & decoder models
 encoder = EncoderRNN(hidden_size, embedding, encoder_n_layers, dropout)
 decoder = LuongAttnDecoderRNN(attn_model, embedding, hidden_size, voc.__len__(), decoder_n_layers, dropout)
@@ -176,10 +110,10 @@ print('Models built and ready to go!')
 
 ################### TRAINING ###############################################
 
-full_training(model_name, voc, pairs, encoder, decoder, 
-              embedding, encoder_n_layers, decoder_n_layers, 
-              save_dir, batch_size, 
-              loadFilename, encoder_optimizer_sd, decoder_optimizer_sd)
+full_training(model_name, voc, pairs, encoder, decoder, embedding, 
+              encoder_n_layers, decoder_n_layers, save_dir, batch_size, 
+              loadFilename, encoder_optimizer_sd, decoder_optimizer_sd, 
+              MAX_LENGTH, device)
 
 # Set dropout layers to eval mode
 encoder.eval()
@@ -188,4 +122,11 @@ decoder.eval()
 # Initialize search module
 searcher = GreedySearchDecoder(encoder, decoder, device)
 
-evaluateInput(encoder, decoder, searcher, voc, device)
+evaluateInput(encoder, decoder, searcher, voc, device, MAX_LENGTH)
+
+
+# CHATBOT CONVERSATIONS
+save_file = "conversations.txt"
+createConversations(encoder, decoder, searcher, voc, device, MAX_LENGTH, save_file, sentences_lengths, lines_test)
+
+

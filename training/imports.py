@@ -19,4 +19,6 @@ import math
 from vocab import Vocab, UnkVocab
 import random
 from batches import batch2TrainData
+import numpy as np
+import random
 

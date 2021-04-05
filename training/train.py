@@ -1,24 +1,12 @@
 from imports import *
 from loss import maskNLLLoss
 
-MAX_LENGTH = 15
 PAD_token = 0
 SOS_token = 1
 EOS_token = 2
 
-clip = 50.0
-teacher_forcing_ratio = 1.0
-learning_rate = 0.0001
-decoder_learning_ratio = 5.0
-n_iteration = 4000
-print_every = 1
-save_every = 500
-
-USE_CUDA = torch.cuda.is_available()
-device = torch.device("cuda" if USE_CUDA else "cpu")
-
 def train(input_variable, lengths, target_variable, mask, max_target_len, encoder, decoder, embedding,
-          encoder_optimizer, decoder_optimizer, batch_size, clip, max_length=MAX_LENGTH):
+          encoder_optimizer, decoder_optimizer, batch_size, clip, max_length, teacher_forcing_ratio, device):
 
     # Zero gradients
     encoder_optimizer.zero_grad()
