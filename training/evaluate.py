@@ -61,4 +61,5 @@ def createConversations(encoder, decoder, searcher, voc, device, max_length, sav
 
     sentences_distribution, _= np.histogram(sentences_lengths, bins=(max_sentence_length - 1))
     chatbot_conv = 50000        # number of conversations the chatbot will generate
-    chatbot_conv_lengths = random.choices(np.arange(min_sentence_length, max_sentence_length + 1), weights = sentences_distribution, k = chatbot_conv)          
+    chatbot_conv_lengths = random.choices(np.arange(min_sentence_length, max_sentence_length + 1), 
+                                            weights = sentences_distribution, k = chatbot_conv)          

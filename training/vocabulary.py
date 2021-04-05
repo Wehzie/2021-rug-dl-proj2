@@ -20,6 +20,14 @@ def trimPairsByWords(voc, pair):
                 return False
     return True
 
+def trimSentenceByWords(voc, sentence):
+    for word in sentence.split(" "):
+        try:
+            voc.word2index(word)
+        except:
+            return False
+    return True
+
 def prepareData(pairs_path, max_length):
     lines = open(pairs_path, "r").read().strip().split('\n')
     pairs = [[s for s in l.split('\t')] for l in lines]  # retrieve pairs
@@ -44,7 +52,16 @@ def prepareData(pairs_path, max_length):
     for pair in pairs:
         if trimPairsByWords(voc,pair):
             new_pairs.append(pair)
-    pairs = new_pairs
 
     # Return the vocabulary and the new pairs of sentences
-    return voc, pairs            
+    return voc, new_pairs            
+
+def trimLines(lines_path, max_length, voc):
+    lines = open(lines_path, "r").read().strip().split('\n')
+
+    new_lines = []
+    for line in lines:
+        if trimSentenceByWords(voc, line):
+            new_lines.append(line)
+
+    return new_lines
