@@ -74,9 +74,9 @@ batch_size = 64
 loadFilename = None
 checkpoint_iter = 4000
 
-loadFilename = os.path.join(save_dir, model_name,
-                            '{}-{}_{}'.format(encoder_n_layers, decoder_n_layers, hidden_size),
-                            '{}_checkpoint.tar'.format(checkpoint_iter))
+# loadFilename = os.path.join(save_dir, model_name,
+#                             '{}-{}_{}'.format(encoder_n_layers, decoder_n_layers, hidden_size),
+#                             '{}_checkpoint.tar'.format(checkpoint_iter))
 
 encoder_optimizer_sd = []
 decoder_optimizer_sd = []
@@ -114,10 +114,9 @@ print('Models built and ready to go!')
 
 ################### TRAINING ###############################################
 
-# full_training(model_name, voc, pairs, encoder, decoder, embedding, 
-#               encoder_n_layers, decoder_n_layers, save_dir, batch_size, 
-#               loadFilename, encoder_optimizer_sd, decoder_optimizer_sd, 
-#               MAX_LENGTH, device)
+full_training(model_name, voc, pairs, encoder, decoder, embedding, encoder_n_layers, 
+                  decoder_n_layers, save_dir, batch_size, loadFilename, encoder_optimizer_sd, 
+                  decoder_optimizer_sd, MAX_LENGTH, device)
 
 # Set dropout layers to eval mode
 encoder.eval()
