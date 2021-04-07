@@ -31,7 +31,6 @@ def trainG(batch_size, label, fake_label, netG):
 
 def train(data_loader):
     '''Train generative adversarial network (GAN).'''
-    
     learning_rate = 0.05
     betas = (0.9, 0.999)            # first and second momentum
     epochs = 100
@@ -46,7 +45,7 @@ def train(data_loader):
    
     for epoch in range(epochs):                 # an epoch is a full iteration over the dataset
         print(f"Epoch: {epoch}")
-        for i, conv in enumerate(data_loader):  # conv is one conversation
+        for i, (conv, label) in enumerate(data_loader):  # conv is one conversation
             print(f"Conversation: {i}")
             ############################
             # (1) Update D network.
@@ -55,7 +54,7 @@ def train(data_loader):
             real_cpu = conv.to(device)              # transfer tensor to CPU
             batch_size = real_cpu.size(0)           # batch size is number of conversations (1) handled per iteration
                                                     #   size(0) takes first argument of tensor shape
-            label = torch.full((len(conv[0]),), real_label, dtype=real_cpu.dtype, device=device)
+            label = torch.full((len(conv[0]),), int(label), dtype=real_cpu.dtype, device=device)
 
             output = netD(real_cpu[0])  # only one 3-d vector is returned so remove 4th dimension
             #print(f"Discriminator output at each token: {output}")
@@ -77,14 +76,16 @@ def train(data_loader):
 
 def main():
     data = Daily_Dialogue()
-    data_loader = DataLoader(dataset=data, batch_size=1, shuffle=False, num_workers=0)
+    data_loader = DataLoader(dataset=data, batch_size=1, shuffle=True, num_workers=0)
     print(f"Number of conversations: {len(data_loader)}")
-    print(f"Dimensions of first conversation (vectorized): {data[0].size()}")
+    f, l = data[0]
+    print(f,l)
+    # print(f"Dimensions of first conversation (vectorized): {data[0].size()}")
 
     print(data.string_data[0])
     print(data.decode(data.vector_data[0]))
 
-    quit()
+    # quit()
     train(data_loader)
 
 if __name__ == "__main__":

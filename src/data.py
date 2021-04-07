@@ -8,7 +8,7 @@ import numpy as np
 import gensim
 import nltk
 from nltk.tokenize import word_tokenize
-nltk.download('punkt')
+# nltk.download('punkt')
 import torch
 
 from torch.utils.data import Dataset
@@ -18,20 +18,35 @@ class Daily_Dialogue(Dataset):
     '''Daily Dialogue Dataset.'''
 
     def __init__(self):
-        self.string_data = self.get_str_dat()
-        self.vector_data = self.get_vec_dat(self.string_data)
+        # get true data
+        self.string_data = self.get_str_dat(False)
+        self.nr_of_true_samples = len(self.string_data)
+
+        # get labels for true conversations
+        self.y = [1 for i in range(self.nr_of_true_samples)]
+
+        # get fake data
+        self.string_data = self.string_data + self.get_str_dat(True)
         self.nr_of_samples = len(self.string_data)
 
-    def get_str_dat(self):
+        # get labels for false conversations
+        self.y = self.y + [0 for i in range(self.nr_of_true_samples, self.nr_of_samples)]
+
+        self.vector_data = self.get_vec_dat(self.string_data)
+        self.x = self.vector_data
+        
+
+    def get_str_dat(self, fake):
         # try loading from file
-        str_dat_path = Path("data/tokenized_str_dat.json")
+        # str_dat_path = Path("data/tokenized_str_dat.json")
         #if str_dat_path.is_file():
         #    with open(str_dat_path, 'r') as file:
         #        return json.load(file)
         
         # shape is 1 x number of conversations
         str_dat = np.loadtxt('./EMNLP_dataset/dialogues_text.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
-        str_dat = str_dat[:10] # NOTE: testing
+        # str_dat = str_dat[:10] # NOTE: testing
+
         
         # tokenize each conversation
         str_dat = [word_tokenize(conv.lower()) for conv in str_dat]
@@ -40,12 +55,18 @@ class Daily_Dialogue(Dataset):
         for conv in str_dat:
             conv[-1] = '__eoc__'
         
-        self.save_str_dat(str_dat_path, str_dat)
+        if fake:
+            fake_dat = np.loadtxt('./training/conversations.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
+            fake_dat = [word_tokenize(conv.lower()) for conv in fake_dat]
+            for conv in fake_dat:
+                conv[-1] = '__eoc__'
+            str_dat = fake_dat
+        # self.save_str_dat(str_dat_path, str_dat)
         return str_dat
         
     def get_vec_dat(self, str_dat):
         # try loading from file
-        vec_dat_path = Path("data/tokenized_vec_dat.json")
+        # vec_dat_path = Path("data/tokenized_vec_dat.json")
         #if vec_dat_path.is_file():
         #    with open(vec_dat_path, 'rb') as file:
         #        return pickle.load(file)
@@ -63,7 +84,7 @@ class Daily_Dialogue(Dataset):
             vec = torch.FloatTensor(temp_conversation)
             vec_dat.append(vec)
 
-        self.save_vec_dat(vec_dat_path, vec_dat)
+        # self.save_vec_dat(vec_dat_path, vec_dat)
         self.model = model
         return vec_dat
 
@@ -87,7 +108,7 @@ class Daily_Dialogue(Dataset):
             pickle.dump(data, file)
     
     def __getitem__(self, index):
-        return self.vector_data[index]
+        return self.vector_data[index], self.y[index]
     
     def __len__(self):
         return self.nr_of_samples
