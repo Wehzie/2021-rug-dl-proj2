@@ -11,7 +11,7 @@ def normalizeString(string):
 def getData(data_path, pairs_path):
     qa_pairs = []
     sentences_length = []
-    with open(data_path, "r") as f:
+    with open(data_path, "r", encoding='utf8') as f:
         # Load the data
         for line in f:
             sentences = line.split("__eou__")
