@@ -34,11 +34,11 @@ def train(data_loader):
     '''Train generative adversarial network (GAN).'''
     learning_rate = 0.05
     betas = (0.9, 0.999)            # first and second momentum
-    epochs = 100
+    epochs = 1
 
     netD = Discriminator().to(device)
     criterion = nn.BCELoss()        # Binary Cross Entropy loss
-    optimizerD = optim.Adam(netD.parameters(), lr=learning_rate, betas=betas)
+    # optimizerD = optim.Adam(netD.parameters(), lr=learning_rate, betas=betas)
     optimizerD = optim.SGD(netD.parameters(), lr=learning_rate)
 
     real_label = 1
@@ -57,19 +57,19 @@ def train(data_loader):
             real_cpu = conv.to(device)              # transfer tensor to CPU
             batch_size = real_cpu.size(0)           # batch size is number of conversations (1) handled per iteration
                                                     #   size(0) takes first argument of tensor shape
-            label = torch.full((len(conv[0]),), int(label), dtype=real_cpu.dtype, device=device)
-
+            # label = torch.full((len(conv[0]),), int(label), dtype=real_cpu.dtype, device=device)
+            # print(real_cpu[0]. size())
             output = netD(real_cpu[0])  # only one 3-d vector is returned so remove 4th dimension
             #print(f"Discriminator output at each token: {output}")
-            if count % 2000 == 0:
-                print(f"Discriminator output at last token: {output[-1]}")
-                print("Actual label: " + str(label))
-                print("Difference: " + str(abs(label - output[-1].item())))
+            print(f"Discriminator output at last token: {output[-1]}")
+            print("Actual label: " + str(label))
+            print("Difference: " + str(abs(label - output[-1].item())))
 
             # Tensor magic to only look at the last label and last output
             # out = torch.tensor([output[-1].item()], requires_grad=True)
-            # label = torch.FloatTensor([label])
+            label = torch.FloatTensor([label]).to(device)
             out = output
+
             errD_real = criterion(out, label)
             errD_real.backward()
             D_x = output.mean().item()
@@ -98,6 +98,7 @@ def main():
     print(data.decode(data.vector_data[0]))
 
     # quit()
+    print("here")
     train(data_loader)
 
 if __name__ == "__main__":
