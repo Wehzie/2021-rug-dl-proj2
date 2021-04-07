@@ -9,6 +9,7 @@ import torch.optim as optim
 import torch.utils.data
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
+from torch.nn.parameter import Parameter
 
 from data import Daily_Dialogue
 from model_discriminator import Discriminator
@@ -38,15 +39,17 @@ def train(data_loader):
     netD = Discriminator().to(device)
     criterion = nn.BCELoss()        # Binary Cross Entropy loss
     optimizerD = optim.Adam(netD.parameters(), lr=learning_rate, betas=betas)
+    optimizerD = optim.SGD(netD.parameters(), lr=learning_rate)
 
     real_label = 1
     fake_label = 0
 
-   
+    count = 0
+
     for epoch in range(epochs):                 # an epoch is a full iteration over the dataset
         print(f"Epoch: {epoch}")
         for i, (conv, label) in enumerate(data_loader):  # conv is one conversation
-            print(f"Conversation: {i}")
+            # print(f"Conversation: {i}")
             ############################
             # (1) Update D network.
             ###########################
@@ -58,9 +61,16 @@ def train(data_loader):
 
             output = netD(real_cpu[0])  # only one 3-d vector is returned so remove 4th dimension
             #print(f"Discriminator output at each token: {output}")
-            print(f"Discriminator output at last token: {output[-1]}")
+            if count % 2000 == 0:
+                print(f"Discriminator output at last token: {output[-1]}")
+                print("Actual label: " + str(label))
+                print("Difference: " + str(abs(label - output[-1].item())))
 
-            errD_real = criterion(output, label)
+            # Tensor magic to only look at the last label and last output
+            # out = torch.tensor([output[-1].item()], requires_grad=True)
+            # label = torch.FloatTensor([label])
+            out = output
+            errD_real = criterion(out, label)
             errD_real.backward()
             D_x = output.mean().item()
 
@@ -71,8 +81,10 @@ def train(data_loader):
             #D_G_z1 = output.mean().item()
             #errD = errD_real + errD_fake
             optimizerD.step()
+            count = count + 1
 
-        torch.save(netD.state_dict(), './data/pytorch_out/netD_epoch_%d.pth' % (epoch))
+        # TODO fix saving the model
+        #torch.save(netD.state_dict(), './data/pytorch_out/netD_epoch_%d.pth' % (epoch))
 
 def main():
     data = Daily_Dialogue()

@@ -27,6 +27,7 @@ class Daily_Dialogue(Dataset):
 
         # get fake data
         self.string_data = self.string_data + self.get_str_dat(True)
+        # self.string_data = self.string_data + self.get_str_dat(False) # NOTE: for testing
         self.nr_of_samples = len(self.string_data)
 
         # get labels for false conversations
@@ -45,7 +46,7 @@ class Daily_Dialogue(Dataset):
         
         # shape is 1 x number of conversations
         str_dat = np.loadtxt('./EMNLP_dataset/dialogues_text.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
-        # str_dat = str_dat[:10] # NOTE: testing
+        str_dat = str_dat[:2000] # NOTE: testing
 
         
         # tokenize each conversation
