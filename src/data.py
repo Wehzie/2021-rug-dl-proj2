@@ -90,13 +90,13 @@ class Daily_Dialogue(Dataset):
         return vec_dat
 
     # is this possibe?
-    def decode(self, vec_dat: list) -> list:
-        out = []
-        for token in vec_dat:
-            NotImplemented
-        return out
+    # def decode(self, vec_dat: list) -> list:
+    #     out = []
+    #     for token in vec_dat:
+    #         NotImplemented
+    #     return out
 
-    # save string data
+    #save string data
     def save_str_dat(self, data_path, data):
         #os.makedirs(data_path, exist_ok=True)
         with open(data_path, 'w') as file:
