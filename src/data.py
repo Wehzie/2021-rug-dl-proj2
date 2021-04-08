@@ -19,6 +19,9 @@ class Daily_Dialogue(Dataset):
 
     def __init__(self):
         # get true data
+        self.word_vector_size = 100
+        self.max_conv_len = 0
+
         self.string_data = self.get_str_dat(False)
         self.nr_of_true_samples = len(self.string_data)
 
@@ -26,8 +29,8 @@ class Daily_Dialogue(Dataset):
         self.y = [1 for i in range(self.nr_of_true_samples)]
 
         # get fake data
-        self.string_data = self.string_data + self.get_str_dat(True)
-        # self.string_data = self.string_data + self.get_str_dat(False) # NOTE: for testing
+        self.string_data = self.string_data + self.get_str_dat(True) # NOTE: comment for testing
+        # self.string_data = self.string_data + self.get_str_dat(False) 
         self.nr_of_samples = len(self.string_data)
 
         # get labels for false conversations
@@ -46,15 +49,25 @@ class Daily_Dialogue(Dataset):
         
         # shape is 1 x number of conversations
         str_dat = np.loadtxt('./EMNLP_dataset/dialogues_text.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
-        str_dat = str_dat[:2000] # NOTE: testing
+        
 
         
         # tokenize each conversation
         str_dat = [word_tokenize(conv.lower()) for conv in str_dat]
+        
 
         # end of conversations indicated by "__eoc__" End-Of-Conversation token
         for conv in str_dat:
+            if len(conv) > self.max_conv_len:
+                self.max_conv_len = len(conv)
             conv[-1] = '__eoc__'
+        print(self.max_conv_len)
+
+        model = gensim.models.Word2Vec(str_dat, size = self.word_vector_size, sg = 1, min_count = 1)
+        self.model = model
+        print(model)
+
+        str_dat = str_dat[:1000] # NOTE: testing
         
         if fake:
             fake_dat = np.loadtxt('./training/conversations.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
@@ -74,19 +87,33 @@ class Daily_Dialogue(Dataset):
         # TODO: if we save/load vectors we also want to save/load the model for decoding, use model.save()
 
         # initialize encoder decoder model
-        model = gensim.models.Word2Vec(str_dat, size = 100, sg = 1, min_count = 1)
-        print(model)
+        
+        # model = gensim.models.Word2Vec(str_dat, size = self.word_vector_size, sg = 1, min_count = 1)
+        # self.model = model
+        # print(model)
 
         vec_dat = []
+
         for conv in str_dat:
             temp_conversation = []
             for token in conv:
-                temp_conversation.append(model.wv[token,])
+                try:
+                    temp_conversation.append(self.model.wv[token,])
+                except:
+                    print("Not in vocabulary: ")
+                    print(token)
+                # print(model.wv[token,].shape)
+            #for i in range(self.max_conv_len - len(conv)):
+            for i in range(875 - len(conv)):
+                pad = np.zeros((1, self.word_vector_size))
+                # print(pad.shape)
+                temp_conversation.append(pad)
             vec = torch.FloatTensor(temp_conversation)
             vec_dat.append(vec)
 
+
         # self.save_vec_dat(vec_dat_path, vec_dat)
-        self.model = model
+        
         return vec_dat
 
     # is this possibe?
@@ -112,6 +139,6 @@ class Daily_Dialogue(Dataset):
         return self.vector_data[index], self.y[index]
     
     def __len__(self):
-        return self.nr_of_samples
+        return len(self.vector_data)
 
 

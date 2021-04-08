@@ -14,13 +14,13 @@ class Discriminator(nn.Module):
             num_layers=hidden_layers,
             nonlinearity="tanh",  # TODO: try relu
         )
-        self.linear1 = nn.Linear(100, 100)
-        self.linear2 = nn.Linear(100, 100)
-        self.linear3 = nn.Linear(100, 100)
-        self.linear4 = nn.Linear(100, 100)
-        self.linear5 = nn.Linear(100, 100)
-        self.linear6 = nn.Linear(100, 100)
-        self.linear7 = nn.Linear(100, 1)
+        max_conv_len = 875
+        self.linear1 = nn.Linear(max_conv_len*100, 1000)
+        self.linear2 = nn.Linear(1000, 400)
+        self.linear3 = nn.Linear(400, 100)
+        self.flatter = nn.Flatten(start_dim=0, end_dim=-1)
+
+        self.linear = nn.Linear(100, 1)
         self.sigmoid = nn.Sigmoid()
         self.relu = nn.ReLU()
         self.h0 = nn.parameter.Parameter(
@@ -30,20 +30,17 @@ class Discriminator(nn.Module):
 
     # called when input is provided to the model
     def forward(self, input):
-        x, hidden = self.rnn(input, self.h0)
-        # x = self.linear1(input)
-        # x = self.relu(x)
-        # x = self.linear2(x)
-        # x = self.relu(x)
-        # x = self.linear3(x)
-        # x = self.relu(x)
-        # x = self.linear4(x)
-        # x = self.relu(x)
-        # x = self.linear5(x)
-        # x = self.relu(x)
-        # x = self.linear6(x)
-        # x = self.relu(x)
-        # x, hidden = self.rnn(x, self.h0)
-        x = self.linear7(x)
+        # x, hidden = self.rnn(input, self.h0)
+
+        x = self.flatter(input)
+
+        x = self.linear1(x)
+        x = self.relu(x)
+        x = self.linear2(x)
+        x = self.relu(x)
+        x = self.linear3(x)
+        x = self.relu(x)
+        x = self.linear(x)
         output = self.sigmoid(x)
+
         return output.view(-1, 1).squeeze(1)
