@@ -41,9 +41,9 @@ def train(data):
     test_loader = DataLoader(dataset=data_test, batch_size=1, shuffle=True, num_workers=0)
     print(f"Number of conversations: {len(data_loader)}")
 
-    learning_rate = 0.05
+    learning_rate = 0.001
     betas = (0.9, 0.999)            # first and second momentum
-    epochs = 7
+    epochs = 20
 
     netD = Discriminator().to(device)
     criterion = nn.BCELoss()        # Binary Cross Entropy loss
@@ -68,9 +68,9 @@ def train(data):
                 0
             )  # batch size is number of conversations (1) handled per iteration
             #   size(0) takes first argument of tensor shape
-            label = torch.full(
-                (len(conv[0]),), int(label), dtype=real_cpu.dtype, device=device
-            )
+            # label = torch.full(
+            #     (len(conv[0]),), int(label), dtype=real_cpu.dtype, device=device
+            # )
 
             output = netD(real_cpu[0])
             # print("Difference: " + str(abs(label - output[-1].item())))
@@ -118,8 +118,10 @@ def train(data):
             else:
                 if label - classified > 0:
                     false_neg = false_neg + 1
+                    # print("false negative " + str(output[-1].item()))
                 if label - classified < 0:
                     false_pos = false_pos + 1
+                    # print("false positive " + str(output[-1].item()))
                 
             total = total + 1
     
@@ -130,7 +132,7 @@ def train(data):
 
 
         # TODO fix saving the model
-        # torch.save(netD.state_dict(), './data/pytorch_out/netD_epoch_%d.pth' % (epoch))
+        torch.save(netD.state_dict(), './results/discriminator_model/netD_epoch_%d.pth' % (epoch))
 
 
 def main():
