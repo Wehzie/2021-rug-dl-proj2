@@ -42,7 +42,7 @@ def train(data):
 
     learning_rate = 0.05
     betas = (0.9, 0.999)            # first and second momentum
-    epochs = 1
+    epochs = 7
 
     netD = Discriminator().to(device)
     criterion = nn.BCELoss()        # Binary Cross Entropy loss
@@ -53,7 +53,7 @@ def train(data):
     fake_label = 0
 
     count = 0
-
+    print("Training...")
     for epoch in range(epochs):                 # an epoch is a full iteration over the dataset
         print(f"Epoch: {epoch}")
         for i, (conv, label) in enumerate(data_loader):  # conv is one conversation
@@ -69,7 +69,7 @@ def train(data):
             # print(real_cpu[0]. size())
             output = netD(real_cpu[0])  # only one 3-d vector is returned so remove 4th dimension
             #print(f"Discriminator output at each token: {output}")
-            if i%400 == 0:
+            if i%1599 == 0:
                 print(f"Conversation: {i}")
                 print(f"Discriminator output at last token: {output[-1]}")
                 print("Actual label: " + str(label))
@@ -92,34 +92,48 @@ def train(data):
             #errD = errD_real + errD_fake
             optimizerD.step()
             count = count + 1
+        
+        correct = 0
+        total = 0
+        false_neg = 0
+        false_pos = 0
+        print("testing....")
+        for i, (conv, label) in enumerate(test_loader):  # conv is one conversation
+            # print(f"Conversation: {i}")
+            ############################
+            # (1) Update D network.
+            ###########################             # initialize gradients with zero
+            real_cpu = conv.to(device)              # transfer tensor to CPU
+            batch_size = real_cpu.size(0)           # batch size is number of conversations (1) handled per iteration
+                                                    #   size(0) takes first argument of tensor shape
+            # label = torch.full((len(conv[0]),), int(label), dtype=real_cpu.dtype, device=device)
+            # print(real_cpu[0]. size())
+            output = netD(real_cpu[0])
+            if output[-1].item() > 0.5:
+                classified = 1
+            else:
+                classified = 0
+            
+            if label - classified == 0:
+                correct = correct + 1
+            else:
+                if label - classified > 0:
+                    false_neg = false_neg + 1
+                if label - classified < 0:
+                    false_pos = false_pos + 1
+                
+            total = total + 1
+    
+        accuracy = correct/total
+        print("accuracy " + str(accuracy))
+        print("false negatives ratio " + str(false_neg/total))
+        print("false positives ratio " + str(false_pos/total))
+
 
         # TODO fix saving the model
         #torch.save(netD.state_dict(), './data/pytorch_out/netD_epoch_%d.pth' % (epoch))
     
-    correct = 0
-    total = 0
-    for i, (conv, label) in enumerate(test_loader):  # conv is one conversation
-        print(f"Conversation: {i}")
-        ############################
-        # (1) Update D network.
-        ###########################             # initialize gradients with zero
-        real_cpu = conv.to(device)              # transfer tensor to CPU
-        batch_size = real_cpu.size(0)           # batch size is number of conversations (1) handled per iteration
-                                                #   size(0) takes first argument of tensor shape
-        # label = torch.full((len(conv[0]),), int(label), dtype=real_cpu.dtype, device=device)
-        # print(real_cpu[0]. size())
-        output = netD(real_cpu[0])
-        if output[-1].item() > 0.5:
-            classified = 1
-        else:
-            classified = 0
-        
-        if label - classified == 0:
-            correct = correct + 1
-        total = total + 1
     
-    accuracy = correct/total
-    print("accuracy" + str(accuracy))
             
         
 

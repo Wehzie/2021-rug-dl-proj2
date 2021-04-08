@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 import pickle
 import json
+import random
 
 import numpy as np
 import gensim
@@ -26,15 +27,15 @@ class Daily_Dialogue(Dataset):
         self.nr_of_true_samples = len(self.string_data)
 
         # get labels for true conversations
-        self.y = [1 for i in range(self.nr_of_true_samples)]
+        self.target = [1 for i in range(self.nr_of_true_samples)]
 
         # get fake data
-        self.string_data = self.string_data + self.get_str_dat(True) # NOTE: comment for testing
+        self.string_data = self.string_data + self.get_random_dat() # NOTE: comment for testing
         # self.string_data = self.string_data + self.get_str_dat(False) 
         self.nr_of_samples = len(self.string_data)
 
         # get labels for false conversations
-        self.y = self.y + [0 for i in range(self.nr_of_true_samples, self.nr_of_samples)]
+        self.target = self.target + [0 for i in range(self.nr_of_true_samples, self.nr_of_samples)]
 
         self.vector_data = self.get_vec_dat(self.string_data)
         self.x = self.vector_data
@@ -67,7 +68,7 @@ class Daily_Dialogue(Dataset):
         self.model = model
         print(model)
 
-        str_dat = str_dat[:1000] # NOTE: testing
+        # str_dat = str_dat[:3000] # NOTE: testing
         
         if fake:
             fake_dat = np.loadtxt('./training/conversations.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
@@ -78,6 +79,81 @@ class Daily_Dialogue(Dataset):
         # self.save_str_dat(str_dat_path, str_dat)
         return str_dat
         
+    def get_random_dat(self):
+        str_dat = np.loadtxt('./EMNLP_dataset/dialogues_text.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
+        
+
+        # tokenize each conversation
+        str_dat = [conv.split('__eou__') for conv in str_dat]
+
+        temp_str_dat = []
+        for conv in str_dat:
+            temp_conv = []
+            for utter in conv:
+                if utter != ' ' and utter != '':
+                    temp_utter = utter
+                    temp_conv.append(temp_utter)
+            temp_str_dat.append(temp_conv)
+        str_dat = temp_str_dat
+
+
+        temp_dat = []
+        lengths =[]
+        for conv in str_dat:
+            lengths.append(len(conv))
+            temp_dat = temp_dat + conv
+
+        str_dat = temp_dat
+        random.shuffle(str_dat)
+
+
+
+        temp_str_dat = []
+        for i in lengths:
+            temp_conv = ''
+            for j in range(i):
+                temp_utter = random.choice(str_dat)
+                while temp_utter == '' or temp_utter == ' ' or temp_utter == '  ':
+                    temp_utter = random.choice(str_dat)
+                temp_conv = temp_conv + temp_utter + ' __eou__ '
+            temp_conv = temp_conv[:-9]
+            temp_str_dat.append(temp_conv)
+
+        str_dat = temp_str_dat
+
+
+
+        # within sentence shuffle
+        # for conv in str_dat:
+        #     random.shuffle(conv)
+        # temp_str_dat = []
+        # for conv in str_dat:
+        #     temp_conv = ''
+        #     for sentence in conv:
+        #         if sentence != ' ' and sentence != '':
+        #             if temp_conv:
+        #                 temp_conv = temp_conv + sentence + ' __eou__ '
+        #             else:
+        #                 temp_conv = sentence + ' __eou__ '
+
+        #     temp_conv = temp_conv[:-9]
+        #     temp_str_dat.append(temp_conv)
+        # str_dat = temp_str_dat
+
+        str_dat = [word_tokenize(conv.lower()) for conv in str_dat]
+
+        # end of conversations indicated by "__eoc__" End-Of-Conversation token
+        for conv in str_dat:
+            if len(conv) > self.max_conv_len:
+                self.max_conv_len = len(conv)
+            conv[-1] = '__eoc__'
+        print(self.max_conv_len)
+
+        # str_dat = str_dat[:3000] # NOTE: testing
+
+        # self.save_str_dat(str_dat_path, str_dat)
+        return str_dat
+
     def get_vec_dat(self, str_dat):
         # try loading from file
         # vec_dat_path = Path("data/tokenized_vec_dat.json")
@@ -136,7 +212,7 @@ class Daily_Dialogue(Dataset):
             pickle.dump(data, file)
     
     def __getitem__(self, index):
-        return self.vector_data[index], self.y[index]
+        return self.vector_data[index], self.target[index]
     
     def __len__(self):
         return len(self.vector_data)
