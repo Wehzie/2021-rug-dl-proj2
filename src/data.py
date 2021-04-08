@@ -18,30 +18,49 @@ from torch.utils.data import Dataset
 class Daily_Dialogue(Dataset):
     '''Daily Dialogue Dataset.'''
 
-    def __init__(self):
-        # get true data
+    def __init__(self,train_mode):
         self.word_vector_size = 100
         self.max_conv_len = 0
+        if train_mode:
+            # get true data
 
-        self.string_data = self.get_str_dat(False)
-        self.nr_of_true_samples = len(self.string_data)
+            self.string_data = self.get_str_dat()
+            self.nr_of_true_samples = len(self.string_data)
 
-        # get labels for true conversations
-        self.target = [1 for i in range(self.nr_of_true_samples)]
+            # get labels for true conversations
+            self.target = [1 for i in range(self.nr_of_true_samples)]
 
-        # get fake data
-        self.string_data = self.string_data + self.get_random_dat() # NOTE: comment for testing
-        # self.string_data = self.string_data + self.get_str_dat(False) 
-        self.nr_of_samples = len(self.string_data)
+            # get fake data
+            self.string_data = self.string_data + self.get_random_dat() # NOTE: comment for testing
+            # self.string_data = self.string_data + self.get_str_dat(False) 
+            self.nr_of_samples = len(self.string_data)
 
-        # get labels for false conversations
-        self.target = self.target + [0 for i in range(self.nr_of_true_samples, self.nr_of_samples)]
+            # get labels for false conversations
+            self.target = self.target + [0 for i in range(self.nr_of_true_samples, self.nr_of_samples)]
 
-        self.vector_data = self.get_vec_dat(self.string_data)
-        self.x = self.vector_data
+            self.vector_data = self.get_vec_dat(self.string_data)
+
+        else:
+            self.string_data = self.get_final_data()
+            self.nr_of_true_samples = len(self.string_data)
+
+            # get labels for true conversations
+            self.target = [1 for i in range(self.nr_of_true_samples)]
+
+            # get fake data
+            self.string_data = self.string_data + self.get_generator_dat() # NOTE: comment for testing
+            # self.string_data = self.string_data + self.get_str_dat(False) 
+            self.nr_of_samples = len(self.string_data)
+
+            # get labels for false conversations
+            self.target = self.target + [0 for i in range(self.nr_of_true_samples, self.nr_of_samples)]
+
+            self.vector_data = self.get_vec_dat(self.string_data)
+
+
         
 
-    def get_str_dat(self, fake):
+    def get_str_dat(self):
         # try loading from file
         # str_dat_path = Path("data/tokenized_str_dat.json")
         #if str_dat_path.is_file():
@@ -72,19 +91,16 @@ class Daily_Dialogue(Dataset):
     
         # end of conversations indicated by "__eoc__" End-Of-Conversation token
         for conv in str_dat:
-            if len(conv) > self.max_conv_len:
-                self.max_conv_len = len(conv)
             conv[-1] = '__eoc__'
-        print(self.max_conv_len)
 
         # str_dat = str_dat[:3000] # NOTE: testing
         
-        if fake:
-            fake_dat = np.loadtxt('./training/conversations.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
-            fake_dat = [word_tokenize(conv.lower()) for conv in fake_dat]
-            for conv in fake_dat:
-                conv[-1] = '__eoc__'
-            str_dat = fake_dat
+        # if fake:
+        #     fake_dat = np.loadtxt('./training/conversations.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
+        #     fake_dat = [word_tokenize(conv.lower()) for conv in fake_dat]
+        #     for conv in fake_dat:
+        #         conv[-1] = '__eoc__'
+        #     str_dat = fake_dat
         # self.save_str_dat(str_dat_path, str_dat)
         return str_dat
         
@@ -209,6 +225,49 @@ class Daily_Dialogue(Dataset):
     #     return out
 
     #save string data
+
+    def get_final_data(self):
+        str_dat = np.loadtxt('./EMNLP_dataset/dialogues_text.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
+        
+        # tokenize each conversation
+        str_dat = [word_tokenize(conv.lower()) for conv in str_dat]
+    
+        # end of conversations indicated by "__eoc__" End-Of-Conversation token
+        for conv in str_dat:
+            if len(conv) > self.max_conv_len:
+                self.max_conv_len = len(conv)
+            conv[-1] = '__eoc__'
+        print(self.max_conv_len)
+
+        model = gensim.models.Word2Vec(str_dat, size = self.word_vector_size, sg = 1, min_count = 1)
+        self.model = model
+        print(model)
+
+        str_dat = np.loadtxt('./EMNLP_dataset/test/dialogues_test.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
+        
+        # tokenize each conversation
+        str_dat = [word_tokenize(conv.lower()) for conv in str_dat]
+    
+        # end of conversations indicated by "__eoc__" End-Of-Conversation token
+        for conv in str_dat:
+            conv[-1] = '__eoc__'
+        
+        return str_dat
+
+    def get_generator_dat(self):
+        str_dat = np.loadtxt('./training/conversations_2.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
+        
+        # tokenize each conversation
+        str_dat = [word_tokenize(conv.lower()) for conv in str_dat]
+    
+        # end of conversations indicated by "__eoc__" End-Of-Conversation token
+        for conv in str_dat:
+            conv[-1] = '__eoc__'
+        
+        return str_dat
+
+
+
     def save_str_dat(self, data_path, data):
         #os.makedirs(data_path, exist_ok=True)
         with open(data_path, 'w') as file:
