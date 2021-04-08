@@ -34,7 +34,7 @@ def prepareData(pairs_path, max_length):
     pairs = filterPairs(pairs, max_length)             # Remove sentences with more words than MAX_LENGTH
     
     voc = Vocab()
-    min_occurrences = 3                     # Set the minimum occurrences of a word to be in the vocabulary
+    min_occurrences = 0                     # Set the minimum occurrences of a word to be in the vocabulary
 
     for _ in range(min_occurrences + 1):    # Add PAD, SOS, EOS tags multiple times so the are not
         voc.word2index("PAD", train=True)  # removed when trimming the vocabulary
