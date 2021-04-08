@@ -135,19 +135,6 @@ def test_model(test_loader, netD):
     print("accuracy " + str(accuracy))
     print("false negatives ratio " + str(false_neg/total))
     print("false positives ratio " + str(false_pos/total))
-
-
-        
-
-
-def main():
-    data = Daily_Dialogue()
-    data_loader = DataLoader(dataset=data, batch_size=1, shuffle=True, num_workers=0)
-    print(f"Number of conversations: {len(data_loader)}")
-    f, l = data[0]
-    print(f, l)
-
-        #torch.save(netD.state_dict(), './data/pytorch_out/netD_epoch_%d.pth' % (epoch))
     
     
             
@@ -165,7 +152,9 @@ def main():
         # print("here")
         train(data)
     else:
-        model = torch.load('./results/discriminator_model/netD_epoch_19.pth', map_location=torch.device('cuda'))
+        model = Discriminator().to(device)
+        state = torch.load('./results/discriminator_model/netD_epoch_19.pth', map_location=torch.device('cuda'))
+        model.load_state_dict(state)
         test_loader = test_loader = DataLoader(dataset=data, batch_size=1, shuffle=True, num_workers=0)
         test_model(test_loader, model)
 
