@@ -1,16 +1,13 @@
-# pylint: disable=locally-disabled, multiple-statements, line-too-long, invalid-name
+# pylint: disable=locally-disabled, multiple-statements, line-too-long, invalid-name, wildcard-import, unused-wildcard-import
 import os
 from imports import *
 from batches import batch2TrainData
-from train import train
-from trainIters import trainIters
-from attention_layer import Attn
 from decoder import LuongAttnDecoderRNN
 from encoder import EncoderRNN
 from greedy_decoder import GreedySearchDecoder
-from evaluate import evaluateInput, createConversations
+from evaluate import createConversations
 from train_model import full_training
-from read_data import normalizeString, getData, getTestData
+from read_data import getData, getTestData
 from vocabulary import prepareData, trimLines
 
 ##############################################################################
@@ -20,30 +17,29 @@ device = torch.device("cuda" if USE_CUDA else "cpu")
 
 THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
 
-test = "EMNLP_dataset/d_t.txt"
-real = "EMNLP_dataset/dialogues_text.txt"
 
-DATA_PATH = real
+
+DATA_PATH = "EMNLP_dataset/dialogues_training.txt"
 DATA_TEST_PATH = "EMNLP_dataset/test/dialogues_test.txt"
 
-PAIRS_PATH = os.path.join(THIS_FOLDER, 'pairs_trimmed.txt')
-LINES_PATH = os.path.join(THIS_FOLDER, 'lines_trimmed.txt')
-save_dir = os.path.join(os.getcwd(), 'results')
+PAIRS_PATH = os.path.join(THIS_FOLDER, "pairs_trimmed.txt")
+LINES_PATH = os.path.join(THIS_FOLDER, "lines_trimmed.txt")
+save_dir = os.path.join(os.getcwd(), "results")
 
 ################### READ, NORMALIZE, CREATE PAIRS ############################
 
-MAX_LENGTH = 15                            # maximum words in a sentence 
-sentences_lengths = getData(DATA_PATH, PAIRS_PATH)            # read_data.py
+MAX_LENGTH = 15  # maximum words in a sentence
+sentences_lengths = getData(DATA_PATH, PAIRS_PATH)  # read_data.py
 
 # if the trimmed lines are already saved skip getTestData
-if path.exists(LINES_PATH) == False or os.stat(LINES_PATH).st_size == 0: 
-    getTestData(DATA_TEST_PATH, LINES_PATH, MAX_LENGTH)       # read_data.py
+if path.exists(LINES_PATH) == False or os.stat(LINES_PATH).st_size == 0:
+    getTestData(DATA_TEST_PATH, LINES_PATH, MAX_LENGTH)  # read_data.py
 
 #################### CREATE VOCABULARY AND NEW PAIRS #########################
 
 voc, pairs = prepareData(PAIRS_PATH, MAX_LENGTH)  # vocabulary.py
-print('total dialogues '+ str(len(pairs)))
-print('total words '+ str(voc.__len__()))
+print("total dialogues " + str(len(pairs)))
+print("total words " + str(voc.__len__()))
 
 lines = trimLines(LINES_PATH, voc)
 #################### PREPARE DATA IN BATCHES #################################
@@ -60,19 +56,19 @@ input_variable, lengths, target_variable, mask, max_target_len = batches
 ################### LOAD MODEL ###############################################
 
 # Configure models
-model_name = 'cb_model'
-attn_model = 'dot'
+model_name = "cb_model"
+attn_model = "dot"
 # attn_model = 'general'
-#attn_model = 'concat'
+# attn_model = 'concat'
 hidden_size = 500
 encoder_n_layers = 2
 decoder_n_layers = 2
 dropout = 0.1
-batch_size = 200
+batch_size = 50
 
 # Set checkpoint to load from; set to None if starting from scratch
 loadFilename = None
-checkpoint_iter = 4000
+checkpoint_iter = 8000
 
 # loadFilename = os.path.join(save_dir, model_name,
 #                             '{}-{}_{}'.format(encoder_n_layers, decoder_n_layers, hidden_size),
@@ -87,36 +83,52 @@ if loadFilename:
     checkpoint = torch.load(loadFilename)
     # If loading a model trained on GPU to CPU
     # checkpoint = torch.load(loadFilename, map_location=torch.device('cpu'))
-    encoder_sd = checkpoint['en']
-    decoder_sd = checkpoint['de']
-    encoder_optimizer_sd = checkpoint['en_opt']
-    decoder_optimizer_sd = checkpoint['de_opt']
-    embedding_sd = checkpoint['embedding']
-    voc.__dict__ = checkpoint['voc_dict']
+    encoder_sd = checkpoint["en"]
+    decoder_sd = checkpoint["de"]
+    encoder_optimizer_sd = checkpoint["en_opt"]
+    decoder_optimizer_sd = checkpoint["de_opt"]
+    embedding_sd = checkpoint["embedding"]
+    voc.__dict__ = checkpoint["voc_dict"]
 
 
-print('Building encoder and decoder ...')
+print("Building encoder and decoder ...")
 # Initialize word embeddings
-embedding = nn.Embedding(voc.__len__(), hidden_size)    #Word embedding
+embedding = nn.Embedding(voc.__len__(), hidden_size)  # Word embedding
 if loadFilename:
     embedding.load_state_dict(embedding_sd)
 
 # Initialize encoder & decoder models
 encoder = EncoderRNN(hidden_size, embedding, encoder_n_layers, dropout)
-decoder = LuongAttnDecoderRNN(attn_model, embedding, hidden_size, voc.__len__(), decoder_n_layers, dropout)
+decoder = LuongAttnDecoderRNN(
+    attn_model, embedding, hidden_size, voc.__len__(), decoder_n_layers, dropout
+)
 if loadFilename:
     encoder.load_state_dict(encoder_sd)
     decoder.load_state_dict(decoder_sd)
 # Use appropriate device
 encoder = encoder.to(device)
 decoder = decoder.to(device)
-print('Models built and ready to go!')
+print("Models built and ready to go!")
 
 ################### TRAINING ###############################################
 
-full_training(model_name, voc, pairs, encoder, decoder, embedding, encoder_n_layers, 
-                  decoder_n_layers, save_dir, batch_size, loadFilename, encoder_optimizer_sd, 
-                  decoder_optimizer_sd, MAX_LENGTH, device)
+full_training(
+    model_name,
+    voc,
+    pairs,
+    encoder,
+    decoder,
+    embedding,
+    encoder_n_layers,
+    decoder_n_layers,
+    save_dir,
+    batch_size,
+    loadFilename,
+    encoder_optimizer_sd,
+    decoder_optimizer_sd,
+    MAX_LENGTH,
+    device,
+)
 
 # Set dropout layers to eval mode
 encoder.eval()
@@ -129,7 +141,15 @@ searcher = GreedySearchDecoder(encoder, decoder, device)
 
 
 # CHATBOT CONVERSATIONS
-save_file = os.path.join(THIS_FOLDER, "conversations.txt")
-createConversations(encoder, decoder, searcher, voc, device, MAX_LENGTH, save_file, sentences_lengths, lines)
-
-
+save_file = os.path.join(THIS_FOLDER, "conversations_2.txt")
+createConversations(
+    encoder,
+    decoder,
+    searcher,
+    voc,
+    device,
+    MAX_LENGTH,
+    save_file,
+    sentences_lengths,
+    lines,
+)

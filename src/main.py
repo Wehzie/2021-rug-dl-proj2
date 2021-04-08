@@ -22,9 +22,10 @@ random.seed(24)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
 
+
 def trainG(batch_size, label, fake_label, netG):
-    '''Train the Generator.'''
-    
+    """Train the Generator."""
+
     noise = torch.randn(batch_size, 1, 1, device=device)
     fake = netG(noise)
     label.fill_(fake_label)
@@ -53,27 +54,26 @@ def train(data):
     fake_label = 0
 
     count = 0
-    print("Training...")
-    for epoch in range(epochs):                 # an epoch is a full iteration over the dataset
+    
+    for epoch in range(epochs):  # an epoch is a full iteration over the dataset
         print(f"Epoch: {epoch}")
         for i, (conv, label) in enumerate(data_loader):  # conv is one conversation
             
             ############################
             # (1) Update D network.
             ###########################
-            netD.zero_grad()                        # initialize gradients with zero
-            real_cpu = conv.to(device)              # transfer tensor to CPU
-            batch_size = real_cpu.size(0)           # batch size is number of conversations (1) handled per iteration
-                                                    #   size(0) takes first argument of tensor shape
-            # label = torch.full((len(conv[0]),), int(label), dtype=real_cpu.dtype, device=device)
-            # print(real_cpu[0]. size())
-            output = netD(real_cpu[0])  # only one 3-d vector is returned so remove 4th dimension
-            #print(f"Discriminator output at each token: {output}")
-            if i%1599 == 0:
-                print(f"Conversation: {i}")
-                print(f"Discriminator output at last token: {output[-1]}")
-                print("Actual label: " + str(label))
-                print("Difference: " + str(abs(label - output[-1].item())))
+            netD.zero_grad()  # initialize gradients with zero
+            real_cpu = conv.to(device)  # transfer tensor to CPU
+            batch_size = real_cpu.size(
+                0
+            )  # batch size is number of conversations (1) handled per iteration
+            #   size(0) takes first argument of tensor shape
+            label = torch.full(
+                (len(conv[0]),), int(label), dtype=real_cpu.dtype, device=device
+            )
+
+            output = netD(real_cpu[0])
+            # print("Difference: " + str(abs(label - output[-1].item())))
 
             # Tensor magic to only look at the last label and last output
             # out = torch.tensor([output[-1].item()], requires_grad=True)
@@ -83,13 +83,12 @@ def train(data):
             errD_real = criterion(out, label)
             errD_real.backward()
             D_x = output.mean().item()
-
-            #fake = trainG(batch_size, label, fake_label, NotImplemented)
-            #output = netD(fake.detach())
-            #errD_fake = criterion(output, label)
-            #errD_fake.backward()
-            #D_G_z1 = output.mean().item()
-            #errD = errD_real + errD_fake
+            # fake = trainG(batch_size, label, fake_label, NotImplemented)
+            # output = netD(fake.detach())
+            # errD_fake = criterion(output, label)
+            # errD_fake.backward()
+            # D_G_z1 = output.mean().item()
+            # errD = errD_real + errD_fake
             optimizerD.step()
             count = count + 1
         
@@ -131,6 +130,16 @@ def train(data):
 
 
         # TODO fix saving the model
+        # torch.save(netD.state_dict(), './data/pytorch_out/netD_epoch_%d.pth' % (epoch))
+
+
+def main():
+    data = Daily_Dialogue()
+    data_loader = DataLoader(dataset=data, batch_size=1, shuffle=True, num_workers=0)
+    print(f"Number of conversations: {len(data_loader)}")
+    f, l = data[0]
+    print(f, l)
+
         #torch.save(netD.state_dict(), './data/pytorch_out/netD_epoch_%d.pth' % (epoch))
     
     
@@ -139,8 +148,7 @@ def train(data):
 
 def main():
     data = Daily_Dialogue()
-    
-    # print(f"Dimensions of first conversation (vectorized): {data[0].size()}")
+        # print(f"Dimensions of first conversation (vectorized): {data[0].size()}")
 
     # print(data.string_data[0])
     # print(data.decode(data.vector_data[0]))
@@ -148,6 +156,7 @@ def main():
     # quit()
     print("here")
     train(data)
+
 
 if __name__ == "__main__":
     main()

@@ -34,9 +34,9 @@ def prepareData(pairs_path, max_length):
     pairs = filterPairs(pairs, max_length)             # Remove sentences with more words than MAX_LENGTH
     
     voc = Vocab()
-    min_occurances = 3                     # Set the minimum occurances of a word to be in the vocabulary
+    min_occurrences = 0                     # Set the minimum occurrences of a word to be in the vocabulary
 
-    for _ in range(min_occurances + 1):    # Add PAD, SOS, EOS tags multiple times so the are not
+    for _ in range(min_occurrences + 1):    # Add PAD, SOS, EOS tags multiple times so the are not
         voc.word2index("PAD", train=True)  # removed when trimming the vocabulary
         voc.word2index("SOS", train=True)
         voc.word2index("EOS", train=True)
@@ -45,7 +45,7 @@ def prepareData(pairs_path, max_length):
         for sentence in pair:
             for word in sentence.split(" "):
                 voc.word2index(word, train=True)
-    voc = voc.prune_by_count(min_occurances)    # Remove words with few occurances
+    voc = voc.prune_by_count(min_occurrences)    # Remove words with few occurrences
 
     # Only keep the sentences of which words are in the vocabulary
     new_pairs = []

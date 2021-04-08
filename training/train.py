@@ -5,8 +5,24 @@ PAD_token = 0
 SOS_token = 1
 EOS_token = 2
 
-def train(input_variable, lengths, target_variable, mask, max_target_len, encoder, decoder, embedding,
-          encoder_optimizer, decoder_optimizer, batch_size, clip, max_length, teacher_forcing_ratio, device):
+
+def train(
+    input_variable,
+    lengths,
+    target_variable,
+    mask,
+    max_target_len,
+    encoder,
+    decoder,
+    embedding,
+    encoder_optimizer,
+    decoder_optimizer,
+    batch_size,
+    clip,
+    max_length,
+    teacher_forcing_ratio,
+    device,
+):
 
     # Zero gradients
     encoder_optimizer.zero_grad()
@@ -32,7 +48,7 @@ def train(input_variable, lengths, target_variable, mask, max_target_len, encode
     decoder_input = decoder_input.to(device)
 
     # Set initial decoder hidden state to the encoder's final hidden state
-    decoder_hidden = encoder_hidden[:decoder.n_layers]
+    decoder_hidden = encoder_hidden[: decoder.n_layers]
 
     # Determine if we are using teacher forcing this iteration
     use_teacher_forcing = True if random.random() < teacher_forcing_ratio else False

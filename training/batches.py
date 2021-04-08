@@ -4,11 +4,14 @@ PAD_token = 0
 SOS_token = 1
 EOS_token = 2
 
+
 def indexesFromSentence(voc, sentence):
-    return [voc.word2index(word) for word in sentence.split(' ')] + [EOS_token]
+    return [voc.word2index(word) for word in sentence.split(" ")] + [EOS_token]
+
 
 def zeroPadding(l, fillvalue=PAD_token):
     return list(itertools.zip_longest(*l, fillvalue=fillvalue))
+
 
 def binaryMatrix(l, value=PAD_token):
     m = []
@@ -21,14 +24,15 @@ def binaryMatrix(l, value=PAD_token):
                 m[i].append(1)
     return m
 
+
 # Returns padded input sequence tensor and lengths
 def inputVar(l, voc):
     indexes_batch = [indexesFromSentence(voc, sentence) for sentence in l]
-    print(indexes_batch)
     lengths = torch.tensor([len(indexes) for indexes in indexes_batch])
     padList = zeroPadding(indexes_batch)
     padVar = torch.LongTensor(padList)
     return padVar, lengths
+
 
 # Returns padded target sequence tensor, padding mask, and max target length
 def outputVar(l, voc):
@@ -39,6 +43,7 @@ def outputVar(l, voc):
     mask = torch.BoolTensor(mask)
     padVar = torch.LongTensor(padList)
     return padVar, mask, max_target_len
+
 
 # Returns all items for a given batch of pairs
 def batch2TrainData(voc, pair_batch):

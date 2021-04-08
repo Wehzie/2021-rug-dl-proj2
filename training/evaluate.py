@@ -10,6 +10,7 @@ from read_data import normalizeString
 #     string = re.sub(r"\s+", r" ", string).strip()
 #     return string
 
+
 def evaluate(encoder, decoder, searcher, voc, sentence, device, max_length):
     ### Format input sentence as a batch
     # words -> indexes
@@ -31,66 +32,98 @@ def evaluate(encoder, decoder, searcher, voc, sentence, device, max_length):
 
 
 def evaluateInput(encoder, decoder, searcher, voc, device, max_length):
-    input_sentence = ''
+    input_sentence = ""
     while True:
         try:
             # Get input sentence
-            input_sentence = input('> ')
+            input_sentence = input("> ")
             # Check if it is quit case
-            if input_sentence == 'q' or input_sentence == 'quit':
+            if input_sentence == "q" or input_sentence == "quit":
                 break
             # Normalize sentence
             input_sentence = normalizeString(input_sentence)
             # Evaluate sentence
-            output_words = evaluate(encoder, decoder, searcher, voc, input_sentence, device, max_length)
+            output_words = evaluate(
+                encoder, decoder, searcher, voc, input_sentence, device, max_length
+            )
             # Format and print response sentence
             response = []
             for word in output_words:
-                if word != 'EOS':
+                if word != "EOS":
                     response.append(word)
                 else:
                     break
-            print('Bot:', ' '.join(response))
+            print("Bot:", " ".join(response))
 
         except KeyError:
             print("Error: Encountered unknown word.")
 
+
 def sentenceMaker(encoder, decoder, searcher, voc, input_sentence, device, max_length):
-    output_words = evaluate(encoder, decoder, searcher, voc, input_sentence, device, max_length)
+    output_words = evaluate(
+        encoder, decoder, searcher, voc, input_sentence, device, max_length
+    )
     response = []
     for word in output_words:
-        if word != 'EOS':
+        if word != "EOS":
             response.append(word)
         else:
             break
     return response
 
+
 def listToString(s):
-    string = ''
+    string = ""
     for word in s:
         string += word
-        string += ' '
+        string += " "
     return string[:-1]
 
-def createConversations(encoder, decoder, searcher, voc, device, max_length, save_file, sentences_lengths, test_lines):
+
+def createConversations(
+    encoder,
+    decoder,
+    searcher,
+    voc,
+    device,
+    max_length,
+    save_file,
+    sentences_lengths,
+    test_lines,
+):
     min_sentence_length = min(sentences_lengths)
     max_sentence_length = max(sentences_lengths)
 
-    sentences_distribution, _= np.histogram(sentences_lengths, bins=(max_sentence_length - 1))
-    chatbot_conv = len(test_lines)        # number of conversations the chatbot will generate
-    chatbot_conv_lengths = random.choices(np.arange(min_sentence_length, max_sentence_length + 1), weights = sentences_distribution, k = chatbot_conv)
+    sentences_distribution, _ = np.histogram(
+        sentences_lengths, bins=(max_sentence_length - 1)
+    )
+    chatbot_conv = len(test_lines)  # number of conversations the chatbot will generate
+    chatbot_conv_lengths = random.choices(
+        np.arange(min_sentence_length, max_sentence_length + 1),
+        weights=sentences_distribution,
+        k=chatbot_conv,
+    )
     step = 1
-    with open(save_file, 'a') as file:
+    with open(save_file, "a") as file:
         for conv_length in chatbot_conv_lengths:
             print(step)
             step += 1
             conversation_starter = test_lines.pop(0)
-            file.write(conversation_starter + ' __eou__ ')
-            response = sentenceMaker(encoder, decoder, searcher, voc, conversation_starter, device, max_length)
+            file.write(conversation_starter + " __eou__ ")
+            response = sentenceMaker(
+                encoder,
+                decoder,
+                searcher,
+                voc,
+                conversation_starter,
+                device,
+                max_length,
+            )
             for _ in range(conv_length):
                 response = listToString(response)
-                file.write('' + response + ' __eou__ ')
+                file.write("" + response + " __eou__ ")
                 input_sentence = response
-                response = sentenceMaker(encoder, decoder, searcher, voc, input_sentence, device, max_length)
-            file.write('\n')
-        
+                response = sentenceMaker(
+                    encoder, decoder, searcher, voc, input_sentence, device, max_length
+                )
+            file.write("\n")

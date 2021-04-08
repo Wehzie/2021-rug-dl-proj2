@@ -1,17 +1,18 @@
 import torch
 import torch.nn as nn
 
+
 class Discriminator(nn.Module):
-    '''Discriminator module with recurrent layer.'''
+    """Discriminator module with recurrent layer."""
 
     def __init__(self):
         super(Discriminator, self).__init__()
         hidden_layers = 15
         self.rnn = nn.RNN(
-            input_size = 100,       # size of a token vector
-            hidden_size = 100,
-            num_layers = hidden_layers,
-            nonlinearity = 'tanh',  # TODO: try relu
+            input_size=100,  # size of a token vector
+            hidden_size=100,
+            num_layers=hidden_layers,
+            nonlinearity="tanh",  # TODO: try relu
         )
         max_conv_len = 875
         self.linear1 = nn.Linear(max_conv_len*100, 1000)
@@ -22,7 +23,10 @@ class Discriminator(nn.Module):
         self.linear = nn.Linear(100, 1)
         self.sigmoid = nn.Sigmoid()
         self.relu = nn.ReLU()
-        self.h0 = nn.parameter.Parameter(torch.randn(hidden_layers, 1, 100).type(torch.FloatTensor), requires_grad=True)
+        self.h0 = nn.parameter.Parameter(
+            torch.randn(hidden_layers, 1, 100).type(torch.FloatTensor),
+            requires_grad=True,
+        )
 
     # called when input is provided to the model
     def forward(self, input):
