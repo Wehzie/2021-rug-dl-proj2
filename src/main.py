@@ -30,8 +30,16 @@ def trainG(batch_size, label, fake_label, netG):
     label.fill_(fake_label)
     return fake
 
-def train(data_loader):
+def train(data):
     '''Train generative adversarial network (GAN).'''
+    split = 0.8
+    train_len = int(len(data)*split)
+    test_len = len(data) - int(len(data)*split)
+    data_train, data_test = torch.utils.data.random_split(data, [train_len,test_len])
+    data_loader = DataLoader(dataset=data_train, batch_size=1, shuffle=True, num_workers=0)
+    test_loader = DataLoader(dataset=data_test, batch_size=1, shuffle=True, num_workers=0)
+    print(f"Number of conversations: {len(data_loader)}")
+
     learning_rate = 0.05
     betas = (0.9, 0.999)            # first and second momentum
     epochs = 1
@@ -49,7 +57,7 @@ def train(data_loader):
     for epoch in range(epochs):                 # an epoch is a full iteration over the dataset
         print(f"Epoch: {epoch}")
         for i, (conv, label) in enumerate(data_loader):  # conv is one conversation
-            # print(f"Conversation: {i}")
+            print(f"Conversation: {i}")
             ############################
             # (1) Update D network.
             ###########################
@@ -85,21 +93,45 @@ def train(data_loader):
 
         # TODO fix saving the model
         #torch.save(netD.state_dict(), './data/pytorch_out/netD_epoch_%d.pth' % (epoch))
+    
+    correct = 0
+    total = 0
+    for i, (conv, label) in enumerate(test_loader):  # conv is one conversation
+        print(f"Conversation: {i}")
+        ############################
+        # (1) Update D network.
+        ###########################             # initialize gradients with zero
+        real_cpu = conv.to(device)              # transfer tensor to CPU
+        batch_size = real_cpu.size(0)           # batch size is number of conversations (1) handled per iteration
+                                                #   size(0) takes first argument of tensor shape
+        # label = torch.full((len(conv[0]),), int(label), dtype=real_cpu.dtype, device=device)
+        # print(real_cpu[0]. size())
+        output = netD(real_cpu[0])
+        if output[-1].item() > 0.5:
+            classified = 1
+        else:
+            classified = 0
+        
+        if label - classified == 0:
+            correct = correct + 1
+        total = total + 1
+    
+    accuracy = correct/total
+    print("accuracy" + str(accuracy))
+            
+        
 
 def main():
     data = Daily_Dialogue()
-    data_loader = DataLoader(dataset=data, batch_size=1, shuffle=True, num_workers=0)
-    print(f"Number of conversations: {len(data_loader)}")
-    f, l = data[0]
-    print(f,l)
+    
     # print(f"Dimensions of first conversation (vectorized): {data[0].size()}")
 
-    print(data.string_data[0])
-    print(data.decode(data.vector_data[0]))
+    # print(data.string_data[0])
+    # print(data.decode(data.vector_data[0]))
 
     # quit()
     print("here")
-    train(data_loader)
+    train(data)
 
 if __name__ == "__main__":
     main()
