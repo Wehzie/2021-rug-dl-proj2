@@ -57,7 +57,7 @@ def train(data):
     for epoch in range(epochs):                 # an epoch is a full iteration over the dataset
         print(f"Epoch: {epoch}")
         for i, (conv, label) in enumerate(data_loader):  # conv is one conversation
-            print(f"Conversation: {i}")
+            
             ############################
             # (1) Update D network.
             ###########################
@@ -69,9 +69,11 @@ def train(data):
             # print(real_cpu[0]. size())
             output = netD(real_cpu[0])  # only one 3-d vector is returned so remove 4th dimension
             #print(f"Discriminator output at each token: {output}")
-            print(f"Discriminator output at last token: {output[-1]}")
-            print("Actual label: " + str(label))
-            print("Difference: " + str(abs(label - output[-1].item())))
+            if i%400 == 0:
+                print(f"Conversation: {i}")
+                print(f"Discriminator output at last token: {output[-1]}")
+                print("Actual label: " + str(label))
+                print("Difference: " + str(abs(label - output[-1].item())))
 
             # Tensor magic to only look at the last label and last output
             # out = torch.tensor([output[-1].item()], requires_grad=True)
