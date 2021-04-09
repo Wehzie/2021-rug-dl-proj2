@@ -1,4 +1,6 @@
 from imports import *
+from flair.embeddings import WordEmbeddings
+from flair.data import Sentence
 
 PAD_token = 0
 SOS_token = 1
@@ -25,9 +27,16 @@ def binaryMatrix(l, value=PAD_token):
     return m
 
 
+def embeddingSentence(voc, sentence):
+    glove_embedding = WordEmbeddings('glove')
+    new_sentence = Sentence(sentence + " EOS")
+    glove_embedding.embed(new_sentence)
+    return [word.embedding for word in new_sentence]
+
 # Returns padded input sequence tensor and lengths
 def inputVar(l, voc):
     indexes_batch = [indexesFromSentence(voc, sentence) for sentence in l]
+    # indexes_batch = [embeddingSentence(voc, sentence) for sentence in l]
     lengths = torch.tensor([len(indexes) for indexes in indexes_batch])
     padList = zeroPadding(indexes_batch)
     padVar = torch.LongTensor(padList)
@@ -37,6 +46,7 @@ def inputVar(l, voc):
 # Returns padded target sequence tensor, padding mask, and max target length
 def outputVar(l, voc):
     indexes_batch = [indexesFromSentence(voc, sentence) for sentence in l]
+    # indexes_batch = [embeddingSentence(voc, sentence) for sentence in l]
     max_target_len = max([len(indexes) for indexes in indexes_batch])
     padList = zeroPadding(indexes_batch)
     mask = binaryMatrix(padList)

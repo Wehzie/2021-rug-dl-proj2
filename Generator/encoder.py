@@ -1,4 +1,5 @@
 from imports import *
+import time
 
 
 class EncoderRNN(nn.Module):
@@ -20,7 +21,14 @@ class EncoderRNN(nn.Module):
 
     def forward(self, input_seq, input_lengths, hidden=None):
         # Convert word indexes to embeddings
+        # embedded = self.embedding.embed(input_seq)
         embedded = self.embedding(input_seq)
+        # print(input_seq)
+        # for sentance in input_seq:
+        #     for word in sentance:
+        #         print(word.)
+        # print(embedded)
+        # time.sleep(120)
         # Pack padded batch of sequences for RNN module
         packed = nn.utils.rnn.pack_padded_sequence(embedded, input_lengths.cpu())
         # Forward pass through GRU

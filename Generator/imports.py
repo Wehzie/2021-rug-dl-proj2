@@ -22,3 +22,7 @@ from batches import batch2TrainData
 import numpy as np
 import random
 from os import path
+import time
+import bcolz
+import pickle
+

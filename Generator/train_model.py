@@ -8,7 +8,7 @@ learning_rate = 0.0001
 decoder_learning_ratio = 5.0
 n_iteration = 8000
 print_every = 1
-save_every = 500
+save_every = 4000
 
 def full_training(model_name, voc, pairs, encoder, decoder, embedding, encoder_n_layers, 
                   decoder_n_layers, save_dir, batch_size, loadFilename, encoder_optimizer_sd, 
