@@ -32,12 +32,11 @@ glove_path = os.path.join(THIS_FOLDER, "glove")
 option = input(
     "Please select what you would like to do:\n 1. Train and chat  2. Load model and chat \n"
 )
-embedding = 0
-if option == 1:
+embedding = '2'
+if option == '1':
     embedding = input(
         "Please select what kind of embedding would you like to use:\n 1. GloVe  2. Embedding layer \n"
     )
-print(option, embedding)
 ################### READ, NORMALIZE, CREATE PAIRS ############################
 
 MAX_LENGTH = 15  # maximum words in a sentence
@@ -56,6 +55,7 @@ print("total words " + str(voc.__len__()))
 
 lines = trimLines(LINES_PATH, voc)
 #################### PREPARE DATA IN BATCHES #################################
+
 small_batch_size = 5
 batches = batch2TrainData(voc, [random.choice(pairs) for _ in range(small_batch_size)])
 input_variable, lengths, target_variable, mask, max_target_len = batches
@@ -77,9 +77,10 @@ batch_size = 50
 loadFilename = None
 checkpoint_iter = 8000
 
-# loadFilename = os.path.join(save_dir, model_name,
-#                             '{}-{}_{}'.format(encoder_n_layers, decoder_n_layers, hidden_size),
-#                             '{}_checkpoint.tar'.format(checkpoint_iter))
+if option == '2':
+    loadFilename = os.path.join(save_dir, model_name,
+                                '{}-{}_{}'.format(encoder_n_layers, decoder_n_layers, hidden_size),
+                                '{}_checkpoint.tar'.format(checkpoint_iter))
 
 encoder_optimizer_sd = []
 decoder_optimizer_sd = []
@@ -100,32 +101,33 @@ if loadFilename:
 
 print("Building encoder and decoder ...")
 ########################## Initialize word embeddings###########################
+if embedding == '1':
+    get_embeddings()
+    vectors = bcolz.open(f"{glove_path}/6B.100.dat")[:]
+    words = pickle.load(open(f"{glove_path}/6B.100_words.pkl", "rb"))
+    word2idx = pickle.load(open(f"{glove_path}/6B.100_idx.pkl", "rb"))
 
-vectors = bcolz.open(f"{glove_path}/6B.100.dat")[:]
-words = pickle.load(open(f"{glove_path}/6B.100_words.pkl", "rb"))
-word2idx = pickle.load(open(f"{glove_path}/6B.100_idx.pkl", "rb"))
+    glove = {w: vectors[word2idx[w]] for w in words}
 
-glove = {w: vectors[word2idx[w]] for w in words}
+    matrix_len = voc.__len__()
+    weights_matrix = np.zeros((matrix_len, 100))
+    words_found = 0
+    for i, word in enumerate(voc.to_dict()["index2word"]):
+        try:
+            weights_matrix[i] = glove[word]
+            words_found += 1
+        except KeyError:
+            weights_matrix[i] = np.random.normal(scale=0.6, size=(100,))
 
-matrix_len = voc.__len__()
-weights_matrix = np.zeros((matrix_len, 100))
-words_found = 0
-for i, word in enumerate(voc.to_dict()["index2word"]):
-    try:
-        weights_matrix[i] = glove[word]
-        words_found += 1
-    except KeyError:
-        weights_matrix[i] = np.random.normal(scale=0.6, size=(100,))
+    num_embeddings, embedding_dim = weights_matrix.shape
 
-num_embeddings, embedding_dim = weights_matrix.shape
+    embedding = nn.Embedding(num_embeddings, embedding_dim)
+    embedding.load_state_dict({"weight": torch.tensor(weights_matrix)})
 
-
-embedding = nn.Embedding(num_embeddings, embedding_dim)
-embedding.load_state_dict({"weight": torch.tensor(weights_matrix)})
-
-# simple word embedding
-hidden_size = 500
-embedding = nn.Embedding(voc.__len__(), hidden_size)
+else:
+    # simple one-hot-word embedding
+    hidden_size = 500
+    embedding = nn.Embedding(voc.__len__(), hidden_size)
 
 if loadFilename:
     embedding.load_state_dict(embedding_sd)
@@ -144,24 +146,24 @@ decoder = decoder.to(device)
 print("Models built and ready to go!")
 
 ################### TRAINING ###############################################
-
-full_training(
-    model_name,
-    voc,
-    pairs,
-    encoder,
-    decoder,
-    embedding,
-    encoder_n_layers,
-    decoder_n_layers,
-    save_dir,
-    batch_size,
-    loadFilename,
-    encoder_optimizer_sd,
-    decoder_optimizer_sd,
-    MAX_LENGTH,
-    device,
-)
+if option == '1':
+    full_training(
+        model_name,
+        voc,
+        pairs,
+        encoder,
+        decoder,
+        embedding,
+        encoder_n_layers,
+        decoder_n_layers,
+        save_dir,
+        batch_size,
+        loadFilename,
+        encoder_optimizer_sd,
+        decoder_optimizer_sd,
+        MAX_LENGTH,
+        device,
+    )
 
 # Set dropout layers to eval mode
 encoder.eval()
@@ -170,13 +172,16 @@ decoder.eval()
 # Initialize search module
 searcher = GreedySearchDecoder(encoder, decoder, device)
 
+# If you want to chat with the model, uncomment the following method
+
 # evaluateInput(encoder, decoder, searcher, voc, device, MAX_LENGTH)
 
 
 ####################################################3# CHATBOT CONVERSATIONS
 save_file = os.path.join(
-    os.path.join(THIS_FOLDER, "fake conversations"), "conversation_dot.txt"
+    os.path.join(THIS_FOLDER, "fake conversations"), "conversation_"+attn_model+".txt"
 )
+
 createConversations(
     encoder,
     decoder,
@@ -188,3 +193,5 @@ createConversations(
     sentences_lengths,
     lines,
 )
+
+print("Conversations will be saved in :" + save_file)

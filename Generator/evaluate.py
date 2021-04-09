@@ -106,7 +106,7 @@ def createConversations(
     step = 1
     with open(save_file, "a") as file:
         for conv_length in chatbot_conv_lengths:
-            print(step)
+            print("Creating conversation:"+str(step))
             step += 1
             conversation_starter = test_lines.pop(0)
             file.write(conversation_starter + " __eou__ ")
