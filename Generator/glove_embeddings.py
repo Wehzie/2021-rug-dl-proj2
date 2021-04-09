@@ -2,13 +2,13 @@ from imports import *
 import bcolz
 import pickle
 
-THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
-glove_path = os.path.join(THIS_FOLDER, "glove")
-words = []
-idx = 0
-word2idx = {}
 
 def get_embeddings():
+    THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
+    glove_path = os.path.join(THIS_FOLDER, "glove")
+    words = []
+    idx = 0
+    word2idx = {}
     vectors = bcolz.carray(np.zeros(1), rootdir=f"{glove_path}/6B.100.dat", mode="w")
 
     with open(f"{glove_path}/glove.6B.100d.txt", "rb") as f:
