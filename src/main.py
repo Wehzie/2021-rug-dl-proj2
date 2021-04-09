@@ -22,7 +22,7 @@ random.seed(24)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
 
-train_mode = True
+train_mode = False
 
 
 def trainG(batch_size, label, fake_label, netG):
@@ -102,6 +102,10 @@ def test_model(test_loader, netD):
     total = 0
     false_neg = 0
     false_pos = 0
+    top = 0
+    bot = 1
+    topcon = 0
+    botcon = 0
     print("testing....")
     for i, (conv, label) in enumerate(test_loader):  # conv is one conversation
         # print(f"Conversation: {i}")
@@ -120,6 +124,10 @@ def test_model(test_loader, netD):
             classified = 0
         
         if label - classified == 0:
+            if label == 0:
+                if output[-1].item() < bot and not train_mode:
+                    bot = output[-1].item()
+                    botcon = i
             correct = correct + 1
         else:
             if label - classified > 0.1:
@@ -127,7 +135,9 @@ def test_model(test_loader, netD):
                 # print("false negative " + str(output[-1].item()))
             if label - classified < -0.1:
                 false_pos = false_pos + 1
-                if output[-1].item() > 0.9 and not train_mode:
+                if output[-1].item() > top and not train_mode:
+                    top = output[-1].item()
+                    topcon = i
                     print(f"Conversation: {i}")
                 # print("false positive " + str(output[-1].item()))
             
@@ -137,6 +147,10 @@ def test_model(test_loader, netD):
     print("accuracy " + str(accuracy))
     print("false negatives ratio " + str(false_neg/total))
     print("false positives ratio " + str(false_pos/total))
+
+    if not train_mode:
+        print("best: " + str(topcon))
+        print("worst: " + str(botcon))
     
     
             

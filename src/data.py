@@ -265,7 +265,10 @@ class Daily_Dialogue(Dataset):
         return str_dat
 
     def get_generator_dat(self):
-        str_dat = np.loadtxt('./training/conversations_2.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
+        str_dat = np.loadtxt('./Generator/fake conversations/conversations_2.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
+        # str_dat = np.loadtxt('./Generator/fake conversations/conversations_3.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
+        # str_dat = np.loadtxt('./Generator/fake conversations/conversation_glove_dot.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
+        # str_dat = np.loadtxt('./Generator/fake conversations/conversation_glove_general.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
         
         # tokenize each conversation
         str_dat = [word_tokenize(conv.lower()) for conv in str_dat]
