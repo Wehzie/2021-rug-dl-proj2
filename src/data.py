@@ -21,6 +21,7 @@ class Daily_Dialogue(Dataset):
     def __init__(self,train_mode):
         self.word_vector_size = 100
         self.max_conv_len = 0
+        self.model = self.make_or_load_model()
         if train_mode:
             # get true data
 
@@ -56,9 +57,29 @@ class Daily_Dialogue(Dataset):
             self.target = self.target + [0 for i in range(self.nr_of_true_samples, self.nr_of_samples)]
 
             self.vector_data = self.get_vec_dat(self.string_data)
+            self.model.save('./src/gensim_model.model')
 
 
+    def make_or_load_model(self):
+        try:
+            self.model = gensim.Word2Vec.load('./src/gensim_model.model')
+        except:
+            str_dat = np.loadtxt('./EMNLP_dataset/dialogues_text.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
         
+            # tokenize each conversation
+            str_dat = [word_tokenize(conv.lower()) for conv in str_dat]
+        
+            # end of conversations indicated by "__eoc__" End-Of-Conversation token
+            for conv in str_dat:
+                if len(conv) > self.max_conv_len:
+                    self.max_conv_len = len(conv)
+                conv[-1] = '__eoc__'
+            print(self.max_conv_len)
+
+            model = gensim.models.Word2Vec(str_dat, size = self.word_vector_size, sg = 1, min_count = 1)
+        print(model)
+        return model
+                       
 
     def get_str_dat(self):
         # try loading from file
@@ -68,21 +89,7 @@ class Daily_Dialogue(Dataset):
         #        return json.load(file)
         
         # shape is 1 x number of conversations
-        str_dat = np.loadtxt('./EMNLP_dataset/dialogues_text.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
         
-        # tokenize each conversation
-        str_dat = [word_tokenize(conv.lower()) for conv in str_dat]
-    
-        # end of conversations indicated by "__eoc__" End-Of-Conversation token
-        for conv in str_dat:
-            if len(conv) > self.max_conv_len:
-                self.max_conv_len = len(conv)
-            conv[-1] = '__eoc__'
-        print(self.max_conv_len)
-
-        model = gensim.models.Word2Vec(str_dat, size = self.word_vector_size, sg = 1, min_count = 1)
-        self.model = model
-        print(model)
 
         str_dat = np.loadtxt('./EMNLP_dataset/train/dialogues_train.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
         
@@ -227,21 +234,21 @@ class Daily_Dialogue(Dataset):
     #save string data
 
     def get_final_data(self):
-        str_dat = np.loadtxt('./EMNLP_dataset/dialogues_text.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
+        # str_dat = np.loadtxt('./EMNLP_dataset/dialogues_text.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
         
         # tokenize each conversation
-        str_dat = [word_tokenize(conv.lower()) for conv in str_dat]
+        # str_dat = [word_tokenize(conv.lower()) for conv in str_dat]
     
-        # end of conversations indicated by "__eoc__" End-Of-Conversation token
-        for conv in str_dat:
-            if len(conv) > self.max_conv_len:
-                self.max_conv_len = len(conv)
-            conv[-1] = '__eoc__'
-        print(self.max_conv_len)
+        # # end of conversations indicated by "__eoc__" End-Of-Conversation token
+        # for conv in str_dat:
+        #     if len(conv) > self.max_conv_len:
+        #         self.max_conv_len = len(conv)
+        #     conv[-1] = '__eoc__'
+        # print(self.max_conv_len)
 
-        model = gensim.models.Word2Vec(str_dat, size = self.word_vector_size, sg = 1, min_count = 1)
-        self.model = model
-        print(model)
+        # model = gensim.models.Word2Vec(str_dat, size = self.word_vector_size, sg = 1, min_count = 1)
+        # self.model = model
+        # print(model)
 
         str_dat = np.loadtxt('./EMNLP_dataset/test/dialogues_test.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
         

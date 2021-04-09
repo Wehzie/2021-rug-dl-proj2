@@ -22,7 +22,7 @@ random.seed(24)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
 
-train_mode = False
+train_mode = True
 
 
 def trainG(batch_size, label, fake_label, netG):
@@ -122,11 +122,13 @@ def test_model(test_loader, netD):
         if label - classified == 0:
             correct = correct + 1
         else:
-            if label - classified > 0:
+            if label - classified > 0.1:
                 false_neg = false_neg + 1
                 # print("false negative " + str(output[-1].item()))
-            if label - classified < 0:
+            if label - classified < -0.1:
                 false_pos = false_pos + 1
+                if output[-1].item() > 0.9:
+                    print(f"Conversation: {i}")
                 # print("false positive " + str(output[-1].item()))
             
         total = total + 1
@@ -155,7 +157,7 @@ def main():
         model = Discriminator().to(device)
         state = torch.load('./results/discriminator_model/netD_epoch_19.pth', map_location=torch.device('cuda'))
         model.load_state_dict(state)
-        test_loader = test_loader = DataLoader(dataset=data, batch_size=1, shuffle=True, num_workers=0)
+        test_loader = DataLoader(dataset=data, batch_size=1, shuffle=False, num_workers=0)
         test_model(test_loader, model)
 
 
