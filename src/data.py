@@ -22,6 +22,7 @@ class Daily_Dialogue(Dataset):
         self.word_vector_size = 100
         self.max_conv_len = 0
         self.model = self.make_or_load_model()
+        # self.model.save('./src/gensim_model.model')
         if train_mode:
             # get true data
 
@@ -57,13 +58,15 @@ class Daily_Dialogue(Dataset):
             self.target = self.target + [0 for i in range(self.nr_of_true_samples, self.nr_of_samples)]
 
             self.vector_data = self.get_vec_dat(self.string_data)
-            self.model.save('./src/gensim_model.model')
+        
 
 
     def make_or_load_model(self):
         try:
-            self.model = gensim.Word2Vec.load('./src/gensim_model.model')
+            print("old")
+            model = gensim.models.Word2Vec.load('./src/gensim_model.model')
         except:
+            print("new")
             str_dat = np.loadtxt('./EMNLP_dataset/dialogues_text.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
         
             # tokenize each conversation
