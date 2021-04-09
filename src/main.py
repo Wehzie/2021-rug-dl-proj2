@@ -127,7 +127,7 @@ def test_model(test_loader, netD):
                 # print("false negative " + str(output[-1].item()))
             if label - classified < -0.1:
                 false_pos = false_pos + 1
-                if output[-1].item() > 0.9:
+                if output[-1].item() > 0.9 and not train_mode:
                     print(f"Conversation: {i}")
                 # print("false positive " + str(output[-1].item()))
             
@@ -155,7 +155,7 @@ def main():
         train(data)
     else:
         model = Discriminator().to(device)
-        state = torch.load('./results/discriminator_model/netD_epoch_19.pth', map_location=torch.device('cuda'))
+        state = torch.load('./results/discriminator_model/netD_epoch_10.pth', map_location=torch.device('cuda'))
         model.load_state_dict(state)
         test_loader = DataLoader(dataset=data, batch_size=1, shuffle=False, num_workers=0)
         test_model(test_loader, model)
