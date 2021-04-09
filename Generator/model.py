@@ -181,7 +181,6 @@ searcher = GreedySearchDecoder(encoder, decoder, device)
 save_file = os.path.join(
     os.path.join(THIS_FOLDER, "fake conversations"), "conversation_"+attn_model+".txt"
 )
-print("Conversations will be saved in :" + save_file)
 
 createConversations(
     encoder,
@@ -194,3 +193,5 @@ createConversations(
     sentences_lengths,
     lines,
 )
+
+print("Conversations will be saved in :" + save_file)
