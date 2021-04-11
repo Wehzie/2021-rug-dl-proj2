@@ -1,9 +1,0 @@
-# Read me for discriminator training and testing
-
-To run the training
-  1. Ensure the variable 'train_mode' in line 25 in main.py is set to 'True'
-  2. Subsequently run main.py
-  
-To test the generator data on the discriminator
-  1. Ensure the variable 'train_mode' in line 25 in main.py is set to 'False'
-  2. Subsequently run main.py
