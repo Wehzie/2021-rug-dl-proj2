@@ -3,14 +3,6 @@ from batches import indexesFromSentence
 
 from read_data import normalizeString
 
-# def normalizeString(string):
-#     string = string.lower().strip()
-#     string = re.sub(r"([.!?])", r" \1", string)
-#     string = re.sub(r"[^a-zA-Z.!?]+", r" ", string)
-#     string = re.sub(r"\s+", r" ", string).strip()
-#     return string
-
-
 def evaluate(encoder, decoder, searcher, voc, sentence, device, max_length):
     ### Format input sentence as a batch
     # words -> indexes
