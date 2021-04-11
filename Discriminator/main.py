@@ -70,7 +70,7 @@ def train(data):
             optimizerD.step()
             count = count + 1
         test_model(test_loader,netD)
-        # TODO fix saving the model
+        
         torch.save(netD.state_dict(), './results/discriminator_model/netD_epoch_%d.pth' % (epoch))
         
 def test_model(test_loader, netD):
