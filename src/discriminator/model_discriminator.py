@@ -12,7 +12,7 @@ class Discriminator(nn.Module):
             input_size=100,  # size of a token vector
             hidden_size=100,
             num_layers=hidden_layers,
-            nonlinearity="tanh",  # TODO: try relu
+            nonlinearity="tanh",
         )
         max_conv_len = 875
         self.linear1 = nn.Linear(max_conv_len*100, 1000)
@@ -30,10 +30,7 @@ class Discriminator(nn.Module):
 
     # called when input is provided to the model
     def forward(self, input):
-        # x, hidden = self.rnn(input, self.h0)
-
         x = self.flatter(input)
-
         x = self.linear1(x)
         x = self.relu(x)
         x = self.linear2(x)

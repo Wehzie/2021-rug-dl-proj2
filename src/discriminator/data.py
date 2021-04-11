@@ -9,7 +9,6 @@ import numpy as np
 import gensim
 import nltk
 from nltk.tokenize import word_tokenize
-# nltk.download('punkt')
 import torch
 
 from torch.utils.data import Dataset
@@ -59,8 +58,6 @@ class Daily_Dialogue(Dataset):
 
             self.vector_data = self.get_vec_dat(self.string_data)
         
-
-
     def make_or_load_model(self):
         try:
             print("old")
@@ -85,15 +82,6 @@ class Daily_Dialogue(Dataset):
                        
 
     def get_str_dat(self):
-        # try loading from file
-        # str_dat_path = Path("data/tokenized_str_dat.json")
-        #if str_dat_path.is_file():
-        #    with open(str_dat_path, 'r') as file:
-        #        return json.load(file)
-        
-        # shape is 1 x number of conversations
-        
-
         str_dat = np.loadtxt('./EMNLP_dataset/train/dialogues_train.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
         
         # tokenize each conversation
@@ -103,20 +91,10 @@ class Daily_Dialogue(Dataset):
         for conv in str_dat:
             conv[-1] = '__eoc__'
 
-        # str_dat = str_dat[:3000] # NOTE: testing
-        
-        # if fake:
-        #     fake_dat = np.loadtxt('./training/conversations.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
-        #     fake_dat = [word_tokenize(conv.lower()) for conv in fake_dat]
-        #     for conv in fake_dat:
-        #         conv[-1] = '__eoc__'
-        #     str_dat = fake_dat
-        # self.save_str_dat(str_dat_path, str_dat)
         return str_dat
         
     def get_random_dat(self):
         str_dat = np.loadtxt('./EMNLP_dataset/dialogues_text.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
-        
 
         # tokenize each conversation
         str_dat = [conv.split('__eou__') for conv in str_dat]
@@ -131,7 +109,6 @@ class Daily_Dialogue(Dataset):
             temp_str_dat.append(temp_conv)
         str_dat = temp_str_dat
 
-
         temp_dat = []
         lengths =[]
         for conv in str_dat:
@@ -140,8 +117,6 @@ class Daily_Dialogue(Dataset):
 
         str_dat = temp_dat
         random.shuffle(str_dat)
-
-
 
         temp_str_dat = []
         for i in lengths:
@@ -156,25 +131,6 @@ class Daily_Dialogue(Dataset):
 
         str_dat = temp_str_dat
 
-
-
-        # within sentence shuffle
-        # for conv in str_dat:
-        #     random.shuffle(conv)
-        # temp_str_dat = []
-        # for conv in str_dat:
-        #     temp_conv = ''
-        #     for sentence in conv:
-        #         if sentence != ' ' and sentence != '':
-        #             if temp_conv:
-        #                 temp_conv = temp_conv + sentence + ' __eou__ '
-        #             else:
-        #                 temp_conv = sentence + ' __eou__ '
-
-        #     temp_conv = temp_conv[:-9]
-        #     temp_str_dat.append(temp_conv)
-        # str_dat = temp_str_dat
-
         str_dat = [word_tokenize(conv.lower()) for conv in str_dat]
 
         # end of conversations indicated by "__eoc__" End-Of-Conversation token
@@ -184,27 +140,10 @@ class Daily_Dialogue(Dataset):
             conv[-1] = '__eoc__'
         print(self.max_conv_len)
 
-        # str_dat = str_dat[:3000] # NOTE: testing
-
-        # self.save_str_dat(str_dat_path, str_dat)
         return str_dat
 
     def get_vec_dat(self, str_dat):
-        # try loading from file
-        # vec_dat_path = Path("data/tokenized_vec_dat.json")
-        #if vec_dat_path.is_file():
-        #    with open(vec_dat_path, 'rb') as file:
-        #        return pickle.load(file)
-        # TODO: if we save/load vectors we also want to save/load the model for decoding, use model.save()
-
-        # initialize encoder decoder model
-        
-        # model = gensim.models.Word2Vec(str_dat, size = self.word_vector_size, sg = 1, min_count = 1)
-        # self.model = model
-        # print(model)
-
         vec_dat = []
-
         for conv in str_dat:
             temp_conversation = []
             for token in conv:
@@ -221,37 +160,10 @@ class Daily_Dialogue(Dataset):
                 temp_conversation.append(pad)
             vec = torch.FloatTensor(temp_conversation)
             vec_dat.append(vec)
-
-
-        # self.save_vec_dat(vec_dat_path, vec_dat)
         
         return vec_dat
 
-    # is this possibe?
-    # def decode(self, vec_dat: list) -> list:
-    #     out = []
-    #     for token in vec_dat:
-    #         NotImplemented
-    #     return out
-
-    #save string data
-
     def get_final_data(self):
-        # str_dat = np.loadtxt('./EMNLP_dataset/dialogues_text.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
-        
-        # tokenize each conversation
-        # str_dat = [word_tokenize(conv.lower()) for conv in str_dat]
-    
-        # # end of conversations indicated by "__eoc__" End-Of-Conversation token
-        # for conv in str_dat:
-        #     if len(conv) > self.max_conv_len:
-        #         self.max_conv_len = len(conv)
-        #     conv[-1] = '__eoc__'
-        # print(self.max_conv_len)
-
-        # model = gensim.models.Word2Vec(str_dat, size = self.word_vector_size, sg = 1, min_count = 1)
-        # self.model = model
-        # print(model)
 
         str_dat = np.loadtxt('./EMNLP_dataset/test/dialogues_test.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
         
@@ -266,9 +178,6 @@ class Daily_Dialogue(Dataset):
 
     def get_generator_dat(self):
         str_dat = np.loadtxt('./Generator/fake conversations/conversations_2.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
-        # str_dat = np.loadtxt('./Generator/fake conversations/conversations_3.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
-        # str_dat = np.loadtxt('./Generator/fake conversations/conversation_glove_dot.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
-        # str_dat = np.loadtxt('./Generator/fake conversations/conversation_glove_general.txt', delimiter='\n', dtype=np.str, encoding='utf-8')
         
         # tokenize each conversation
         str_dat = [word_tokenize(conv.lower()) for conv in str_dat]
@@ -278,8 +187,6 @@ class Daily_Dialogue(Dataset):
             conv[-1] = '__eoc__'
         
         return str_dat
-
-
 
     def save_str_dat(self, data_path, data):
         #os.makedirs(data_path, exist_ok=True)
