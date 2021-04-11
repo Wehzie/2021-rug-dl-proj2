@@ -13,7 +13,7 @@ from torch.nn.parameter import Parameter
 
 from data import Daily_Dialogue
 from model_discriminator import Discriminator
-from model_generator import Generator
+
 
 # set seed
 random.seed(24)
