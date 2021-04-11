@@ -1,7 +1,13 @@
+.vscode
+.history
+__pycache__
 *.json
 *.pth
-__pycache__
 *.pyc
-.history
-.vscode
-results/
+
+!data_app/discriminator/gensim_model.model
+
+!data_app/generator/generated_conversations
+!data_app/generator/train
+!data_app/generator/test
+data_app/generator/*

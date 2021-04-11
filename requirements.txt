@@ -1,8 +1,6 @@
 numpy
 torch
 torchvision
-flair
 nltk
 gensim
-bcolz
 vocab

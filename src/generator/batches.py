@@ -1,8 +1,6 @@
 import itertools
 
 import torch
-import flair.embeddings.WordEmbeddings as WordEmbeddings
-import flair.data.Sentence as Sentence
 
 PAD_token = 0
 SOS_token = 1

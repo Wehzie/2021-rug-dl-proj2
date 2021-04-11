@@ -1,7 +1,7 @@
 import torch
 import torch.optim as optim
 
-from train_iteration import train_iters
+
 
 # Configure training/optimization
 clip = 50.0
@@ -43,3 +43,4 @@ def full_training(model_name, voc, pairs, encoder, decoder, embedding, encoder_n
     print("Starting Training!")
     train_iters(model_name, voc, pairs, encoder, decoder, encoder_optimizer, decoder_optimizer, embedding, encoder_n_layers, decoder_n_layers, save_dir, n_iteration, batch_size, print_every, save_every, clip, loadFilename, max_length, teacher_forcing_ratio, device)
     
+from train_iteration import train_iters

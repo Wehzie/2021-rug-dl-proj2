@@ -3,10 +3,6 @@ import random
 
 import torch
 
-from train_generator import full_training
-from train_coders import train
-from batches import batch_to_train_data
-
 model_name = "cb_model"
 attn_model = "dot"
 # attn_model = 'general'
@@ -117,3 +113,7 @@ def train_iters(
                 },
                 os.path.join(directory, "{}_{}.tar".format(iteration, "checkpoint")),
             )
+
+from train_generator import full_training
+from train_coders import train
+from batches import batch_to_train_data
