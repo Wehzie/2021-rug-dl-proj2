@@ -12,7 +12,7 @@ class Discriminator(nn.Module):
             input_size=100,  # size of a token vector
             hidden_size=100,
             num_layers=hidden_layers,
-            nonlinearity="tanh",  # TODO: try relu
+            nonlinearity="tanh",  
         )
         max_conv_len = 875
         self.linear1 = nn.Linear(max_conv_len*100, 1000)
