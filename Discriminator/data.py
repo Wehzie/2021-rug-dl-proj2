@@ -117,7 +117,7 @@ class Daily_Dialogue(Dataset):
 
         str_dat = temp_dat
         random.shuffle(str_dat)
-s
+
         temp_str_dat = []
         for i in lengths:
             temp_conv = ''
