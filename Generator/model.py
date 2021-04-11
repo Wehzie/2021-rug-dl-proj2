@@ -100,7 +100,7 @@ if loadFilename:
 
 
 print("Building encoder and decoder ...")
-########################## Initialize word embeddings###########################
+##################### Initialize word embeddings ########################
 if embedding == '1':
     get_embeddings()
     vectors = bcolz.open(f"{glove_path}/6B.100.dat")[:]
@@ -145,7 +145,7 @@ encoder = encoder.to(device)
 decoder = decoder.to(device)
 print("Models built and ready to go!")
 
-################### TRAINING ###############################################
+################### TRAINING #########################################
 if option == '1':
     full_training(
         model_name,
@@ -177,7 +177,7 @@ searcher = GreedySearchDecoder(encoder, decoder, device)
 # evaluateInput(encoder, decoder, searcher, voc, device, MAX_LENGTH)
 
 
-####################################################3# CHATBOT CONVERSATIONS
+################### CHATBOT CONVERSATIONS #########################
 save_file = os.path.join(
     os.path.join(THIS_FOLDER, "fake conversations"), "conversation_"+attn_model+".txt"
 )
