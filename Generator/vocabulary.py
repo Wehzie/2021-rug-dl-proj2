@@ -36,12 +36,12 @@ def prepareData(pairs_path, max_length):
     voc = Vocab()
     min_occurrences = 0                     # Set the minimum occurrences of a word to be in the vocabulary
 
-    for _ in range(min_occurrences + 1):    # Add PAD, SOS, EOS tags multiple times so the are not
-        voc.word2index("PAD", train=True)  # removed when trimming the vocabulary
+    for _ in range(min_occurrences + 1):    # Add PAD, SOS, EOS tags multiple times so they are not
+        voc.word2index("PAD", train=True)   # removed when trimming the vocabulary
         voc.word2index("SOS", train=True)
         voc.word2index("EOS", train=True)
     
-    for pair in pairs:                     # Add all words in the vocabulary
+    for pair in pairs:                      # Add all words in the vocabulary
         for sentence in pair:
             for word in sentence.split(" "):
                 voc.word2index(word, train=True)
