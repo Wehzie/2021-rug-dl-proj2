@@ -22,7 +22,7 @@ random.seed(24)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
 
-train_mode = False
+train_mode = True
 
 def train(data):
     '''Train generative adversarial network (GAN).'''
